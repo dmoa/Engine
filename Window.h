@@ -42,7 +42,8 @@ void Window::Init() {
                               SDL_WINDOWPOS_UNDEFINED,
                               g_graphics.w,
                               g_graphics.h,
-                              SDL_WINDOW_SHOWN | SDL_WINDOW_RESIZABLE | SDL_WINDOW_OPENGL | SDL_WINDOW_MAXIMIZED);
+                              SDL_WINDOW_SHOWN | SDL_WINDOW_RESIZABLE | SDL_WINDOW_OPENGL |
+                                  SDL_WINDOW_MAXIMIZED);
 
     gl_context = SDL_GL_CreateContext(window);
     if (gl_context == NULL) {
@@ -129,8 +130,10 @@ void Window::Clear() {
 void Window::Resized(int new_w, int new_h) {
     g_graphics.w = new_w;
     g_graphics.h = new_h;
-    g_graphics.gameplay_target_x = (g_graphics.w - gameplay_target.texture.w * g_graphics.scale) / 2;
-    g_graphics.gameplay_target_y = (g_graphics.h - gameplay_target.texture.h * g_graphics.scale) / 2;
+    g_graphics.gameplay_target_x =
+        (g_graphics.w - gameplay_target.texture.w * g_graphics.scale) / 2;
+    g_graphics.gameplay_target_y =
+        (g_graphics.h - gameplay_target.texture.h * g_graphics.scale) / 2;
     ResizeTextureFramebuffer(&overlay_target, new_w / g_graphics.scale, new_h / g_graphics.scale);
 }
 
@@ -149,7 +152,10 @@ void Window::Present() {
     // glUseProgram(gl_program_posteffects_gameplay);
     // SendLightsToProgram(gl_program_posteffects_gameplay);
 
-    DrawTexture(gameplay_target.texture, g_graphics.gameplay_target_x, g_graphics.gameplay_target_y, g_graphics.scale);
+    DrawTexture(gameplay_target.texture,
+                g_graphics.gameplay_target_x,
+                g_graphics.gameplay_target_y,
+                g_graphics.scale);
 
     // the gameplay window is scaled because we want to enlarge the small pixel art grid.
     // DrawTexture(gameplay_target.texture);

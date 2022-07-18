@@ -76,6 +76,8 @@ void DrawTextureEx(Texture texture,
                    v2 *pivot_point = NULL,
                    float angle = 0);
 
+void DrawTextureRotated(Texture *texture, int x, int y, float angle);
+
 Texture_Framebuffer CreateTextureFramebuffer(int w, int h);
 void ResizeTextureFramebuffer(Texture_Framebuffer *texture_framebuffer, int w, int h);
 void FreeTextureFramebuffer(Texture_Framebuffer *);
@@ -139,6 +141,8 @@ Texture CreateTexture(int width, int height, void *pixels, GLenum format) {
     Texture texture;
     texture.w = width;
     texture.h = height;
+
+    print("width %i height %i", width, height);
 
     // Note for self: glGenTextures can generate multiple textures, but we just
     // want one, hence the 1.
@@ -293,7 +297,6 @@ void DrawTextureEx(Texture texture,
                    bool flip_horizontally,
                    v2 *pivot_point,
                    float angle) {
-
     int source_x, source_y, source_w, source_h;
     if (source != NULL) {
         source_x = source->x;
@@ -311,10 +314,9 @@ void DrawTextureEx(Texture texture,
     if (pivot_point != NULL) {
         px = pivot_point->x;
         py = pivot_point->y;
-    }
-    else { // defaults to center of texture
+    } else { // defaults to center of texture
         px = source_w / 2;
-        px = source_h / 2;
+        py = source_h / 2;
     }
 
     DrawTextureEx(texture,
@@ -329,6 +331,15 @@ void DrawTextureEx(Texture texture,
                   px,
                   py,
                   angle);
+}
+
+void DrawTextureRotated(Texture *texture, int x, int y, float angle) {
+    int source_x = 0;
+    int source_y = 0;
+    int source_w = texture->w;
+    int source_h = texture->h;
+    int px = source_w / 2;
+    int py = source_h / 2;
 }
 
 Texture_Framebuffer CreateTextureFramebuffer(int w, int h, GLint default_buffer) {
