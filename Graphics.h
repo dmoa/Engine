@@ -142,8 +142,6 @@ Texture CreateTexture(int width, int height, void *pixels, GLenum format) {
     texture.w = width;
     texture.h = height;
 
-    print("width %i height %i", width, height);
-
     // Note for self: glGenTextures can generate multiple textures, but we just
     // want one, hence the 1.
     glGenTextures(1, &texture.gl_texture);

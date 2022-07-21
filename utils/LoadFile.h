@@ -5,7 +5,6 @@ char *LoadFile(char *path);
 #ifdef ENGINE_IMPLEMENTATION
 
 char *LoadFile(char *path) {
-    print("%s", path);
     FILE *file = fopen(path, "r");
     if (!file) {
         print("Couldn't load %s !", path);
