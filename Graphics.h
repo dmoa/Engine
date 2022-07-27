@@ -9,6 +9,11 @@
 #include "utils/ase_loader.h"
 
 #define MAX_NUM_LIGHTS 64
+#ifdef __linux__
+#define DEFAULT_FRAME_BUFFER 1
+#else
+#define DEFAULT_FRAME_BUFFER 0
+#endif
 
 struct Light {
         v2 position; // normalised
@@ -28,9 +33,7 @@ struct GlobalGraphicsData {
 
         int num_lights = 0;
         Light lights[MAX_NUM_LIGHTS];
-        // where gameplay is drawn from
-        int gameplay_target_x;
-        int gameplay_target_y;
+        Rect gameplay_viewport;
 };
 
 extern GlobalGraphicsData g_graphics;
@@ -50,7 +53,6 @@ GLuint CreateEmptyTexture(int width, int height);
 Texture CreateTexture(int width, int height, void *pixels, GLenum format = GL_RGBA);
 void FreeTexture(Texture texture);
 void DrawTexture(Texture texture, int x = 0, int y = 0, int scale = 1);
-void DrawTextureStretched(Texture texture, int x, int y, int w, int h);
 // pivot is relative
 void DrawTextureEx(Texture texture,
                    int x,
@@ -64,9 +66,7 @@ void DrawTextureEx(Texture texture,
                    int pivot_x = -1,
                    int pivot_y = -1,
                    float angle = 0);
-
-// If source NULL, entire texture is used.
-// If pivot_point NULL, it rotates about the center of the texture.
+// Could crash if pivot_point is NULL
 void DrawTextureEx(Texture texture,
                    int x,
                    int y,
@@ -75,8 +75,6 @@ void DrawTextureEx(Texture texture,
                    bool flip_horizontally = false,
                    v2 *pivot_point = NULL,
                    float angle = 0);
-
-void DrawTextureRotated(Texture *texture, int x, int y, float angle);
 
 Texture_Framebuffer CreateTextureFramebuffer(int w, int h);
 void ResizeTextureFramebuffer(Texture_Framebuffer *texture_framebuffer, int w, int h);
@@ -189,27 +187,6 @@ void DrawTexture(Texture texture, int x, int y, int scale) {
     glEnd();
 }
 
-void DrawTextureStretched(Texture texture, int x, int y, int w, int h) {
-    glBindTexture(GL_TEXTURE_2D, texture.gl_texture);
-    glBegin(GL_QUADS);
-
-    float left = gl_window_x(x);
-    float right = gl_window_x(x + w); // (-) instead of (+) because opengl coordinate system
-    float top = gl_window_y(y);
-    float bottom = gl_window_y(y + h);
-
-    glTexCoord2f(0.0, 1.0);
-    glVertex2f(left, top); // Top Left Corner
-    glTexCoord2f(1.0, 1.0);
-    glVertex2f(right, top); // Top Right Corner
-    glTexCoord2f(1.0, 0.0);
-    glVertex2f(right, bottom); // Bottom Right Corner
-    glTexCoord2f(0.0, 0.0);
-    glVertex2f(left, bottom); // Bottom Left Corner
-
-    glEnd();
-}
-
 void DrawTextureEx(Texture texture,
                    int x,
                    int y,
@@ -295,6 +272,12 @@ void DrawTextureEx(Texture texture,
                    bool flip_horizontally,
                    v2 *pivot_point,
                    float angle) {
+    int px, py = -1;
+    if (pivot_point != NULL) {
+        px = pivot_point->x;
+        py = pivot_point->y;
+    }
+
     int source_x, source_y, source_w, source_h;
     if (source != NULL) {
         source_x = source->x;
@@ -306,15 +289,6 @@ void DrawTextureEx(Texture texture,
         source_y = 0;
         source_w = texture.w;
         source_h = texture.h;
-    }
-
-    int px, py = -1;
-    if (pivot_point != NULL) {
-        px = pivot_point->x;
-        py = pivot_point->y;
-    } else { // defaults to center of texture
-        px = source_w / 2;
-        py = source_h / 2;
     }
 
     DrawTextureEx(texture,
@@ -331,21 +305,9 @@ void DrawTextureEx(Texture texture,
                   angle);
 }
 
-void DrawTextureRotated(Texture *texture, int x, int y, float angle) {
-    int source_x = 0;
-    int source_y = 0;
-    int source_w = texture->w;
-    int source_h = texture->h;
-    int px = source_w / 2;
-    int py = source_h / 2;
-}
-
-Texture_Framebuffer CreateTextureFramebuffer(int w, int h, GLint default_buffer) {
+Texture_Framebuffer CreateTextureFramebuffer(int w, int h) {
     GLuint framebuffer;
     glGenFramebuffers(1, &framebuffer); // makes the buffer
-    if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE) {
-        printf("the buffer is scuffed");
-    }
     glBindFramebuffer(GL_FRAMEBUFFER,
                       framebuffer); // This function actually attaches it to "the
                                     // framebuffer target" aka the window for us.
@@ -362,7 +324,7 @@ Texture_Framebuffer CreateTextureFramebuffer(int w, int h, GLint default_buffer)
         print("ERROR::FRAMEBUFFER:: Framebuffer is not complete!");
     }
 
-    glBindFramebuffer(GL_FRAMEBUFFER, default_buffer);
+    glBindFramebuffer(GL_FRAMEBUFFER, 0);
 
     return { { texture_for_buffer, w, h }, framebuffer };
 }
@@ -391,24 +353,13 @@ void SetCurrentFramebuffer(Texture_Framebuffer *texture_framebuffer) {
         g_graphics.framebuffer_w = g_graphics.w;
         g_graphics.framebuffer_h = g_graphics.h;
         glViewport(0, 0, g_graphics.w, g_graphics.h);
-        glBindFramebuffer(GL_FRAMEBUFFER, 1);
-        glDrawBuffer(GL_BACK);
+        glBindFramebuffer(GL_FRAMEBUFFER, DEFAULT_FRAME_BUFFER);
     } else {
         g_graphics.framebuffer_w = texture_framebuffer->texture.w;
         g_graphics.framebuffer_h = texture_framebuffer->texture.h;
         glViewport(0, 0, texture_framebuffer->texture.w, texture_framebuffer->texture.h);
         glBindFramebuffer(GL_FRAMEBUFFER, texture_framebuffer->framebuffer);
     }
-}
-
-// this is yuky, redo it better
-void SetCurrentFramebuffer(GLint default_buffer) {
-    // If not a texture framebuffer, then set the framebuffer to be the window.
-    g_graphics.framebuffer_w = g_graphics.w;
-    g_graphics.framebuffer_h = g_graphics.h;
-    glViewport(0, 0, g_graphics.w, g_graphics.h);
-    glBindFramebuffer(GL_FRAMEBUFFER, default_buffer);
-    glDrawBuffer(GL_BACK);
 }
 
 GLuint LoadShader(char *path, GLenum shader_type) {
@@ -530,6 +481,6 @@ void SendLightsToProgram(GLint gl_program) {
     glUniform1i(variable_location, g_graphics.num_lights);
 }
 
-GlobalGraphicsData g_graphics = { 1400, 800, 2, NULL };
+GlobalGraphicsData g_graphics = { 1400, 800, 4, NULL };
 
 #endif

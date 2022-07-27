@@ -20,23 +20,19 @@ typedef uint16_t u16;
 typedef uint8_t u8;
 
 struct v2 {
-  float x, y;
-};
-
-struct v2i {
-  int x, y;
+        float x, y;
 };
 
 struct v3 {
-  float x, y, z;
+        float x, y, z;
 };
 
 struct IntRect {
-  int x, y, w, h;
+        int x, y, w, h;
 };
 
 struct FloatRect {
-  float x, y, w, h;
+        float x, y, w, h;
 };
 
 // Generally avoid using.
@@ -46,6 +42,42 @@ struct FloatRect {
 // We don't use new because new usually implies a constructor.
 #define bmalloc(t) (t *)(malloc(sizeof(t)))
 #define bmalloc_arr(t, n) (t *)(malloc(sizeof(t) * n))
+
+
+#if defined(__linux__) || defined (__APPLE__)
+char *itoa(int value, char *result, int base);
+#ifdef ENGINE_IMPLEMENTATION
+// implementation of itoa found at strudel.org.uk/itoa
+char *itoa(int value, char *result, int base) {
+    // check that the base if valid
+    if (base < 2 || base > 36) {
+        *result = '\0';
+        return result;
+    }
+
+    char *ptr = result, *ptr1 = result, tmp_char;
+    int tmp_value;
+
+    do {
+        tmp_value = value;
+        value /= base;
+        *ptr++ = "zyxwvutsrqponmlkjihgfedcba9876543210123456789abcdefghijklmnopqrst"
+                 "uvwxyz"[35 + (tmp_value - value * base)];
+    } while (value);
+
+    // Apply negative sign
+    if (tmp_value < 0)
+        *ptr++ = '-';
+    *ptr-- = '\0';
+    while (ptr1 < ptr) {
+        tmp_char = *ptr;
+        *ptr-- = *ptr1;
+        *ptr1++ = tmp_char;
+    }
+    return result;
+}
+#endif
+#endif
 
 #include "utils/string.h"
 
@@ -104,22 +136,22 @@ void EngineQuit();
 #ifdef ENGINE_IMPLEMENTATION
 
 void EngineInit() {
-  SDL_Init(SDL_INIT_EVERYTHING);
-  IMG_Init(IMG_INIT_PNG);
-  TTF_Init();
-  srand(time(0));
-  g_text.LoadFont();
-  g_controls.Init();
+    SDL_Init(SDL_INIT_EVERYTHING);
+    IMG_Init(IMG_INIT_PNG);
+    TTF_Init();
+    srand(time(0));
+    g_text.LoadFont();
+    g_controls.Init();
 
-  Ase_SetFlipVerticallyOnLoad(true);
-  stbi_set_flip_vertically_on_load(true);
+    Ase_SetFlipVerticallyOnLoad(true);
+    stbi_set_flip_vertically_on_load(true);
 }
 
 void EngineQuit() {
-  g_text.DestroyFont();
-  TTF_Quit();
-  IMG_Quit();
-  SDL_Quit();
+    g_text.DestroyFont();
+    TTF_Quit();
+    IMG_Quit();
+    SDL_Quit();
 }
 
 #endif

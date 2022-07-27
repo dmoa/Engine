@@ -1,11 +1,11 @@
-#version 130
+#version 120
 
-out vec2 texture_position;
-out vec2 screen_position;
+varying vec2 texture_position;
+varying vec2 screen_position;
 
 void main() {
     gl_Position = gl_Vertex;
 
-    texture_position = gl_MultiTexCoord0.st;
+    texture_position = vec2(gl_MultiTexCoord0.s, gl_MultiTexCoord0.t);
     screen_position = gl_Vertex.xy;
 }

@@ -12,7 +12,7 @@ struct Tags {
         u16 num_tags;
 };
 
-struct Asset_Texture : Texture {
+struct Asset_Image : Texture {
         char *file_path;
 };
 
@@ -29,7 +29,7 @@ struct Asset_Ase {
         // For the draw order and for where an asset / entity can be damaged
         Rect *movement_box;
         // Used by the asset / entity to damage other assets / entities.
-        Rect *collision_box;
+        Rect *damage_box;
 };
 
 struct Asset_Ase_Animated : Asset_Ase {
@@ -38,11 +38,11 @@ struct Asset_Ase_Animated : Asset_Ase {
         Tags tags;
 };
 
-Asset_Texture LoadAsset_Texture(char *file_path);
+Asset_Image LoadAsset_Image(char *file_path);
 Asset_Ase *LoadAsset_Ase(char *file_path);
 Asset_Ase_Animated *LoadAsset_Ase_Animated(char *file_path);
 
-void DestroyAsset_Texture(Asset_Texture image);
+void DestroyAsset_Image(Asset_Image image);
 void DestroyAsset_Ase(Asset_Ase *a);
 void DestroyAsset_Ase_Animated(Asset_Ase_Animated *a);
 
@@ -51,7 +51,7 @@ void DestroyAsset_Ase_Animated(Asset_Ase_Animated *a);
 // @TODO why do we use strmalloc_wt and not strmalloc again? Write comment
 // explaining
 
-Asset_Texture LoadAsset_Texture(char *file_path) {
+Asset_Image LoadAsset_Image(char *file_path) {
     int width;
     int height;
     int num_channels;
@@ -109,8 +109,8 @@ Asset_Ase *LoadAsset_Ase(char *file_path) {
     for (int i = 0; i < output->num_slices; i++) {
         if (strequal(output->slices[i].name, "movement_box")) {
             *(asset->movement_box) = output->slices[i].quad;
-        } else if (strequal(output->slices[i].name, "collision_box")) {
-            *(asset->collision_box) = output->slices[i].quad;
+        } else if (strequal(output->slices[i].name, "damage_box")) {
+            *(asset->damage_box) = output->slices[i].quad;
         } else {
             print("%s: Asset_Ase slice %s not supported", file_path, output->slices[i].name);
         }
@@ -133,7 +133,7 @@ Asset_Ase_Animated *LoadAsset_Ase_Animated(char *file_path) {
     return (Asset_Ase_Animated *)LoadAsset_Ase(file_path);
 }
 
-void DestroyAsset_Texture(Asset_Texture image) {
+void DestroyAsset_Image(Asset_Image image) {
     // free(image.file_path);
     glDeleteTextures(1, &image.gl_texture);
 }
@@ -142,7 +142,7 @@ void DestroyAsset_Ase(Asset_Ase *a) {
     free(a->file_path);
     FreeTexture(a->texture);
     free(a->movement_box);
-    free(a->collision_box);
+    free(a->damage_box);
 
     free(a);
 }
@@ -153,7 +153,7 @@ void DestroyAsset_Ase_Animated(Asset_Ase_Animated *a) {
     free(a->file_path);
     FreeTexture(a->texture);
     free(a->movement_box);
-    free(a->collision_box);
+    free(a->damage_box);
 
     free(a->frame_durations);
 
