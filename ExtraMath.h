@@ -31,6 +31,10 @@ bool AABB(Asset_Ase *a, Asset_Ase *b, float x, float y, float x2, float y2);
 
 bool AABB_Movement(float x, float y, float w, float h, Asset_Ase *a, float x2, float y2);
 
+bool AABB_Movement(Rect rect, Asset_Ase *a, float x2, float y2);
+
+bool AABB_Collision(float x, float y, float w, float h, Asset_Ase *a, float x2, float y2);
+
 // This explains it better than I could:
 // http://jeffreythompson.org/collision-detection/line-line.php
 bool LineLine(float x1, float y1, float x2, float y2, float x3, float y3, float x4, float y4);
@@ -50,6 +54,8 @@ void RotatePoint(v2 *point, v2 *source, float wrong_angle);
 void RotatePoint(v2 *point, float pivot_x, float pivot_y, float wrong_angle);
 
 bool PolygonRectangle(v2 *vertices, Rect *rect);
+
+float AngleBetweenTwoPoints(int target_x, int target_y, int origin_x, int origin_y);
 
 #ifdef ENGINE_IMPLEMENTATION
 
@@ -87,15 +93,24 @@ bool AABB(float x, float y, float w, float h, float x2, float y2, float w2, floa
 }
 
 bool AABB(Asset_Ase *a, Asset_Ase *b, float x, float y, float x2, float y2) {
-    return x + a->damage_box->x + a->damage_box->w > x2 + b->damage_box->x &&
-           x + a->damage_box->x < x2 + b->damage_box->x + b->damage_box->w &&
-           y + a->damage_box->y + a->damage_box->h > y2 + b->damage_box->y &&
-           y + a->damage_box->y < y2 + b->damage_box->y + b->damage_box->h;
+    return x + a->collision_box->x + a->collision_box->w > x2 + b->collision_box->x &&
+           x + a->collision_box->x < x2 + b->collision_box->x + b->collision_box->w &&
+           y + a->collision_box->y + a->collision_box->h > y2 + b->collision_box->y &&
+           y + a->collision_box->y < y2 + b->collision_box->y + b->collision_box->h;
 }
 
 bool AABB_Movement(float x, float y, float w, float h, Asset_Ase *a, float x2, float y2) {
     return x + w > x2 + a->movement_box->x && x < x2 + a->movement_box->x + a->movement_box->w &&
            y + h > y2 + a->movement_box->y && y < y2 + a->movement_box->y + a->movement_box->h;
+}
+
+bool AABB_Movement(Rect rect, Asset_Ase *a, float x2, float y2) {
+    return AABB_Movement(rect.x, rect.y, rect.w, rect.h, a, x2, y2);
+}
+
+bool AABB_Collision(float x, float y, float w, float h, Asset_Ase *a, float x2, float y2) {
+    return x + w > x2 + a->collision_box->x && x < x2 + a->collision_box->x + a->collision_box->w &&
+           y + h > y2 + a->collision_box->y && y < y2 + a->collision_box->y + a->collision_box->h;
 }
 
 // This explains it better than I could:
@@ -187,6 +202,10 @@ bool PolygonRectangle(v2 *vertices, Rect *rect) {
            PolygonPoint(vertices, rect->x + rect->w, rect->y) ||
            PolygonPoint(vertices, rect->x + rect->w, rect->y + rect->h) ||
            PolygonPoint(vertices, rect->x, rect->y + rect->h);
+}
+
+float AngleBetweenTwoPoints(int target_x, int target_y, int origin_x, int origin_y) {
+    return atan2(target_y - origin_y, target_x - origin_x);
 }
 
 #endif

@@ -23,6 +23,10 @@ struct v2 {
         float x, y;
 };
 
+struct v2i {
+        int x, y;
+};
+
 struct v3 {
         float x, y, z;
 };
