@@ -163,8 +163,7 @@ bool PolygonPoint(v2 *vertices, A px, B py) {
     return collision;
 }
 
-void RotatePoint(v2 *point, v2 *source, float wrong_angle) {
-    float angle = ToRadians(wrong_angle);
+void RotatePoint(v2 *point, v2 *source, float angle) {
     float tx = point->x - source->x;
     float ty = point->y - source->y;
 
@@ -172,8 +171,7 @@ void RotatePoint(v2 *point, v2 *source, float wrong_angle) {
     point->y = source->y + ty * cos(angle) + tx * sin(angle);
 }
 
-void RotatePoint(v2 *point, float pivot_x, float pivot_y, float wrong_angle) {
-    float angle = ToRadians(wrong_angle);
+void RotatePoint(v2 *point, float pivot_x, float pivot_y, float angle) {
     float tx = point->x - pivot_x;
     float ty = point->y - pivot_y;
 

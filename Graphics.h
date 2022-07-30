@@ -314,7 +314,7 @@ void DrawTextureEx(Texture texture,
     }
     else { // defaults to center of texture
         px = source_w / 2;
-        px = source_h / 2;
+        py = source_h / 2;
     }
 
     DrawTextureEx(texture,
