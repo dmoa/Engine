@@ -46,13 +46,15 @@ bool PointRect(float x, float y, Rect *rect);
 // Not safe
 void RectToV2(Rect *r, v2 *vertices);
 
-// Assuming polygon has 4 sides for now
+// Assuming polygon has 4 sides
 template<typename A, typename B>
 bool PolygonPoint(v2 *vertices, A px, B py);
 
-void RotatePoint(v2 *point, v2 *source, float wrong_angle);
-void RotatePoint(v2 *point, float pivot_x, float pivot_y, float wrong_angle);
+void RotatePoint(v2 *point, v2 *source, float angle);
+void RotatePoint(v2 *point, float pivot_x, float pivot_y, float angle);
+v2 RotatePoint(float point_x, float point_y, v2* pivot_point, float angle);
 
+// Assuming polygon has 4 sides
 bool PolygonRectangle(v2 *vertices, Rect *rect);
 
 float AngleBetweenTwoPoints(int target_x, int target_y, int origin_x, int origin_y);
@@ -177,6 +179,15 @@ void RotatePoint(v2 *point, float pivot_x, float pivot_y, float angle) {
 
     point->x = pivot_x + tx * cos(angle) - ty * sin(angle);
     point->y = pivot_y + ty * cos(angle) + tx * sin(angle);
+}
+
+v2 RotatePoint(float point_x, float point_y, v2* pivot_point, float angle) {
+    float tx = point_x - pivot_point->x;
+    float ty = point_y - pivot_point->y;
+    return {
+        pivot_point->x + tx * cos(angle) - ty * sin(angle),
+        pivot_point->y + ty * cos(angle) + tx * sin(angle)
+    };
 }
 
 bool PolygonRectangle(v2 *vertices, Rect *rect) {
