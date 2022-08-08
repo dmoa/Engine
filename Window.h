@@ -2,6 +2,7 @@
 
 #include "Graphics.h"
 #include "Clock.h"
+#include "utils/gltext.h"
 
 struct Window {
         void Init();
@@ -80,7 +81,7 @@ void Window::Init() {
     glAttachShader(gl_program_default, vert);
     glAttachShader(gl_program_default, frag);
 
-    // LinkProgram(gl_program_default);
+    LinkProgram(gl_program_default);
     // Doesn't actually delete them, but flags them to be deleted later.
     glDeleteShader(vert);
     glDeleteShader(frag);
@@ -109,6 +110,10 @@ void Window::Init() {
     Resized(g_graphics.w, g_graphics.h); // hack to set correct dimensions of gameplay_target
     // might not need the line below, @ CHECK
     g_graphics.framebuffer_w = g_graphics.framebuffer_h = 512;
+
+    // text
+    gltInit();
+
 }
 
 void Window::Clear() {
@@ -145,6 +150,7 @@ void Window::SetDrawOverlay() {
 }
 
 void Window::Present() {
+    glUseProgram(gl_program_default);
     SetCurrentFramebuffer(default_framebuffer);
     // glUseProgram(gl_program_posteffects_gameplay);
     // SendLightsToProgram(gl_program_posteffects_gameplay);
@@ -154,7 +160,6 @@ void Window::Present() {
     // the gameplay window is scaled because we want to enlarge the small pixel art grid.
     // DrawTexture(gameplay_target.texture);
 
-    glUseProgram(gl_program_default);
     DrawTexture(overlay_target.texture, 0, 0, g_graphics.scale);
 
     SDL_GL_SwapWindow(window);

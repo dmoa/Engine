@@ -87,17 +87,18 @@ struct FloatRect {
 
 #ifdef ENGINE_IMPLEMENTATION
 #define STB_IMAGE_IMPLEMENTATION
+#define GLT_IMPLEMENTATION
 #define ASE_LOADER_IMPLEMENTATION
 #endif
 
 #include "Window.h"
 #include "Graphics.h"
-#include "Text.h"
 #include "Controls.h"
 #include "Asset.h"
 #include "Clock.h"
 #include "Animation.h"
 #include "ExtraMath.h"
+#include "utils/gltext.h"
 
 void EngineInit();
 void EngineQuit();
@@ -107,9 +108,7 @@ void EngineQuit();
 void EngineInit() {
     SDL_Init(SDL_INIT_EVERYTHING);
     IMG_Init(IMG_INIT_PNG);
-    TTF_Init();
     srand(time(0));
-    g_text.LoadFont();
     g_controls.Init();
 
     Ase_SetFlipVerticallyOnLoad(true);
@@ -117,8 +116,7 @@ void EngineInit() {
 }
 
 void EngineQuit() {
-    g_text.DestroyFont();
-    TTF_Quit();
+    gltTerminate();
     IMG_Quit();
     SDL_Quit();
 }
