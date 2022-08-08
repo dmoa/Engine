@@ -90,7 +90,7 @@ void Window::Init() {
     glAttachShader(gl_program_posteffects_gameplay, vert);
     glAttachShader(gl_program_posteffects_gameplay, frag_2);
 
-    // LinkProgram(gl_program_posteffects_gameplay);
+    LinkProgram(gl_program_posteffects_gameplay);
     glDeleteShader(frag_2);
 
     // Going to finally activate the default shaders that we wanted to use at the
