@@ -96,6 +96,7 @@ void Window::Init() {
     // Going to finally activate the default shaders that we wanted to use at the
     // beginning
     glUseProgram(gl_program_default);
+    SetDrawOpacity(1.0);
 
     ///// NOT OPENGL /////
 

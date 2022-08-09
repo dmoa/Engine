@@ -87,6 +87,7 @@ void LinkProgram(GLuint gl_program);
 
 void PrintGLError();
 
+void SetDrawOpacity(float opacity); // sets opacity for current gl program
 int AddLight(Light light); // returns index of new light
 void SendLightsToProgram(GLint current_gl_program);
 
@@ -477,6 +478,12 @@ void PrintGLError() {
                 break;
         }
     }
+}
+
+void SetDrawOpacity(float opacity) {
+    int current_gl_program; glGetIntegerv(GL_CURRENT_PROGRAM, & current_gl_program);
+    int variable_location = glGetUniformLocation(current_gl_program, "opacity");
+    glUniform1f(variable_location, opacity);
 }
 
 // Light position is 0->1 relative to the texture the light is going to be used
