@@ -43,7 +43,13 @@ void EngineClock::tick() {
     if (g_dt != 0)
         fpss[fpss_index] = 1 / g_dt;
     fpss_index = (fpss_index + 1) % ACCURACY;
-    itoa(average_fps, average_fps_str, 10);
+
+    // SDL_GetTicks() returns junk values the first few times.
+    // This means that average_fps may be some very long number, more than
+    // the 5 characters that we allocated for it. And so, we do this range bound
+    // to make sure itoa doesn't overide other memory we're using.
+    if (average_fps > 0 && average_fps < 9999)
+        itoa(average_fps, average_fps_str, 10);
 }
 
 float g_dt = 0.f;
