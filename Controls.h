@@ -129,15 +129,6 @@ bool GlobalControls::ActionDev() {
 
 GlobalControls g_controls;
 
-// This might straight up be wrong now.
-// void GetMouseGameState(int *x, int *y) {
-//     SDL_GetMouseState(x, y);
-//     if (x)
-//         *x = *x / g_graphics.scale + g_graphics.gameplay_viewport.x;
-//     if (y)
-//         *y = *y / g_graphics.scale + g_graphics.gameplay_viewport.y;
-// }
-
 v2i GetMouseGameState() {
     v2i return_coord = {-1, -1};
     SDL_GetMouseState(& return_coord.x, & return_coord.y);

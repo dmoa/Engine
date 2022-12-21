@@ -1,16 +1,17 @@
 #pragma once
+// Assuming all polygons have four sides (it's all we need for now)
+#define POLYGON_NUM_POINTS 4
 
 #include <stdlib.h>
 #include <time.h>
 
 #include "Engine/Asset.h"
+#include "utils/JavidCollision.h"
 
 #define PI 3.14159265
 #define ROOT2 1.41421356237
 #define ToRadians(a) a *PI / 180
 
-// Assuming all polygons have four sides (it's all we need for now)
-#define POLYGON_NUM_POINTS 4
 
 float pyth_s(float x, float y, float x2, float y2);
 
@@ -44,7 +45,7 @@ bool LineRect(float x1, float y1, float x2, float y2, float rx, float ry, float 
 bool PointRect(float x, float y, Rect *rect);
 
 // Not safe
-void RectToV2(Rect *r, v2 *vertices);
+void RectToV2(FloatRect *r, v2 *vertices);
 
 // Assuming polygon has 4 sides
 template<typename A, typename B>
@@ -55,11 +56,19 @@ void RotatePoint(v2 *point, float pivot_x, float pivot_y, float angle);
 v2 RotatePoint(float point_x, float point_y, v2* pivot_point, float angle);
 
 // Assuming polygon has 4 sides
-bool PolygonRectangle(v2 *vertices, Rect *rect);
+bool PolygonRectangle(v2 *vertices, FloatRect *rect);
 
 float AngleBetweenTwoPoints(int target_x, int target_y, int origin_x, int origin_y);
 
+
+
+
+
 #ifdef ENGINE_IMPLEMENTATION
+
+
+
+
 
 float pyth_s(float x, float y, float x2, float y2) {
     return (x - x2) * (x - x2) + (y - y2) * (y - y2);
@@ -123,7 +132,7 @@ bool LineLine(float x1, float y1, float x2, float y2, float x3, float y3, float 
     float b = ((x2 - x1) * (y1 - y3) - (y2 - y1) * (x1 - x3)) /
               ((y4 - y3) * (x2 - x1) - (x4 - x3) * (y2 - y1));
 
-    return a >= 0 && a <= 1 && b >= 0 && b <= 1;
+    return a >= 0.0 && a <= 1.0 && b >= 0.0 && b <= 1.0;
 }
 
 bool LineRect(float x1, float y1, float x2, float y2, float rx, float ry, float rw, float rh) {
@@ -141,7 +150,9 @@ bool PointRect(float x, float y, Rect *rect) {
 }
 
 // Not safe
-void RectToV2(Rect *r, v2 *vertices) {
+
+// v2* SHOULD BE [4]
+void RectToV2(FloatRect *r, v2 *vertices) {
     vertices[0] = { r->x, r->y };
     vertices[1] = { r->x + r->w, r->y };
     vertices[2] = { r->x + r->w, r->y + r->h };
@@ -190,28 +201,43 @@ v2 RotatePoint(float point_x, float point_y, v2* pivot_point, float angle) {
     };
 }
 
-bool PolygonRectangle(v2 *vertices, Rect *rect) {
+// inline void print_v2_size_four(v2* a) {
+    // print("(%f %f), (%f %f), (%f %f), (%f %f)", a[0].x, a[0].y, a[1].x, a[1].y, a[2].x, a[2].y, a[3].x, a[3].y);
+// }
+
+bool PolygonRectangle(v2* vertices, FloatRect* rect) {
+
     // 1. Checks if every line of the polygon collides with the rectangle.
     // 2. Checks if any point of the rectangle is inside the polygon - For
     // rectangles engulfed by polygons
     // 3. Checks if any point of the polygon is inside the rectangle - For
     // polygons engulfed by rectangles
 
-    for (int i = 0; i < POLYGON_NUM_POINTS; i++) {
-        v2 p1 = vertices[i];
-        v2 p2 = vertices[(i + 1) % POLYGON_NUM_POINTS];
+    // for (int i = 0; i < POLYGON_NUM_POINTS; i++) {
+    //     v2 p1 = vertices[i];
+    //     v2 p2 = vertices[(i + 1) % POLYGON_NUM_POINTS];
 
-        if (LineRect(p1.x, p1.y, p2.x, p2.y, rect->x, rect->y, rect->w, rect->h))
-            return true;
-        if (PointRect(p1.x, p1.y, rect))
-            return true;
-    }
+    //     if (LineRect(p1.x, p1.y, p2.x, p2.y, rect->x, rect->y, rect->w, rect->h))
+    //         return true;
+    //     if (PointRect(p1.x, p1.y, rect))
+    //         return true;
+    // }
 
-    return PolygonPoint(vertices, rect->x, rect->y) ||
-           PolygonPoint(vertices, rect->x + rect->w, rect->y) ||
-           PolygonPoint(vertices, rect->x + rect->w, rect->y + rect->h) ||
-           PolygonPoint(vertices, rect->x, rect->y + rect->h);
+    // return PolygonPoint(vertices, rect->x, rect->y) ||
+    //        PolygonPoint(vertices, rect->x + rect->w, rect->y) ||
+    //        PolygonPoint(vertices, rect->x + rect->w, rect->y + rect->h) ||
+    //        PolygonPoint(vertices, rect->x, rect->y + rect->h);
+
+    v2 converted_to_v2 [4];
+    RectToV2(rect, (v2*) & converted_to_v2);
+
+    // print("%f %f %f %f", rect->x, rect->y, rect->w, rect->h);
+    // print_v2_size_four(converted_to_v2);
+
+
+    return ShapeOverlap_SAT(vertices, (v2*) & converted_to_v2);
 }
+
 
 float AngleBetweenTwoPoints(int target_x, int target_y, int origin_x, int origin_y) {
     return atan2(target_y - origin_y, target_x - origin_x);
