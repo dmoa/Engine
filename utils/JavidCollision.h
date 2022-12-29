@@ -80,9 +80,6 @@ inline void print_v2_size_four(v2* a) {
 bool ShapeOverlap_SAT(v2* r1, v2* r2)
 {
 
-    // print_v2_size_four(r1);
-    // print_v2_size_four(r2);
-
     v2* poly1 = r1;
     v2* poly2 = r2;
 

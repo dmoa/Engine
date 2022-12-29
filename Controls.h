@@ -19,6 +19,7 @@
 struct GlobalControls {
         const Uint8 *keys_down = NULL;
         SDL_GameController *controller = NULL;
+        bool action_one_before = false;
         bool action_dev_before = false;
         int old_mouse_x, old_mouse_y = 0;
 
@@ -30,6 +31,7 @@ struct GlobalControls {
         bool Down();
 
         bool Action1();
+        bool Action1Event();
         bool Back();
         bool MouseMoved();
         bool ActionDev();
@@ -40,6 +42,7 @@ extern GlobalControls g_controls;
 
 void GetMouseGameState(int *x, int *y);
 v2i GetMouseGameState();
+v2i GetMouseGameOverlayState();
 
 inline bool GetMouseDown(int i = 1) {
     return SDL_GetMouseState(NULL, NULL) == SDL_BUTTON(i);
@@ -100,6 +103,17 @@ bool GlobalControls::Action1() {
     return GetMouseDown(SDL_BUTTON_LEFT) || ControllerButton(SDL_CONTROLLER_BUTTON_X);
 }
 
+bool GlobalControls::Action1Event() {
+
+    bool action_one_now = GetMouseDown(SDL_BUTTON_LEFT) || ControllerButton(SDL_CONTROLLER_BUTTON_X);
+    bool result = action_one_now && ! action_one_before;
+
+    action_one_before = action_one_now;
+
+    return result;
+
+}
+
 bool GlobalControls::Back() {
     return keys_down[SDL_SCANCODE_ESCAPE] || ControllerButton(SDL_CONTROLLER_BUTTON_START);
 }
@@ -119,8 +133,7 @@ bool GlobalControls::MouseMoved() {
 bool GlobalControls::ActionDev() {
     // To make sure the function doesn't constantly spam ActionDev is down.
     // It acts more as a key down event.
-    bool action_dev_now = (keys_down[SDL_SCANCODE_LCTRL]) ||
-                          (ControllerButton(SDL_CONTROLLER_BUTTON_BACK) && g_controls.Left());
+    bool action_dev_now = (keys_down[SDL_SCANCODE_LCTRL]) || (ControllerButton(SDL_CONTROLLER_BUTTON_BACK) && g_controls.Left());
     bool result = action_dev_now && !action_dev_before;
     action_dev_before = action_dev_now;
 
@@ -134,6 +147,15 @@ v2i GetMouseGameState() {
     SDL_GetMouseState(& return_coord.x, & return_coord.y);
     return_coord.x = (return_coord.x - g_graphics.gameplay_target_x) / g_graphics.scale;
     return_coord.y = (return_coord.y - g_graphics.gameplay_target_y) / g_graphics.scale;
+
+    return return_coord;
+}
+
+v2i GetMouseGameOverlayState() {
+    v2i return_coord = {-1, -1};
+    SDL_GetMouseState(& return_coord.x, & return_coord.y);
+    return_coord.x = return_coord.x / g_graphics.scale;
+    return_coord.y = return_coord.y / g_graphics.scale;
 
     return return_coord;
 }
