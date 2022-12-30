@@ -36,6 +36,7 @@ struct GlobalControls {
         bool Down();
 
         bool Action1();
+        bool Action2();
         bool Action1Event();
         bool Back();
         bool MouseMoved();
@@ -110,6 +111,10 @@ bool GlobalControls::Down() {
 
 bool GlobalControls::Action1() {
     return GetMouseDown(SDL_BUTTON_LEFT) || ControllerButton(SDL_CONTROLLER_BUTTON_X);
+}
+
+bool GlobalControls::Action2() {
+    return GetMouseDown(SDL_BUTTON_RIGHT) || ControllerButton(SDL_CONTROLLER_BUTTON_Y);
 }
 
 bool GlobalControls::Action1Event() {
