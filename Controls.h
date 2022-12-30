@@ -19,11 +19,16 @@
 struct GlobalControls {
         const Uint8 *keys_down = NULL;
         SDL_GameController *controller = NULL;
+
         bool action_one_before = false;
+
         bool action_dev_before = false;
         int old_mouse_x, old_mouse_y = 0;
 
         void Init();
+
+        // CALL AFTER ALL OTHER UPDATE CALLS
+        void Update();
 
         bool Left();
         bool Right();
@@ -79,6 +84,10 @@ void GlobalControls::Init() {
     controller = GetGameController();
 }
 
+void GlobalControls::Update() {
+    action_one_before = Action1();
+}
+
 bool GlobalControls::Left() {
     return keys_down[SDL_SCANCODE_LEFT] || keys_down[SDL_SCANCODE_A] ||
            IsLeft(ControllerAxis(JOYSTICK_LEFTX));
@@ -104,13 +113,8 @@ bool GlobalControls::Action1() {
 }
 
 bool GlobalControls::Action1Event() {
-
-    bool action_one_now = GetMouseDown(SDL_BUTTON_LEFT) || ControllerButton(SDL_CONTROLLER_BUTTON_X);
-    bool result = action_one_now && ! action_one_before;
-
-    action_one_before = action_one_now;
-
-    return result;
+    // If we have the mouse down and it wasn't down before, then that's an event!
+    return Action1() && ! action_one_before;
 
 }
 
