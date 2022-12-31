@@ -52,7 +52,10 @@ void FreeTexture(Texture texture);
 void DrawTexture(Texture texture, int x = 0, int y = 0, int scale = 1);
 void DrawTextureStretched(Texture texture, int x, int y, int w, int h);
 // pivot is relative
-void DrawTextureEx(Texture texture,
+
+// Without _, clang build complains that the functions are ambiguous,
+// i.e. doesn't know which function call I want. It is what it is.
+void DrawTextureEx_(Texture texture,
                    int x,
                    int y,
                    int source_x,
@@ -209,7 +212,7 @@ void DrawTextureStretched(Texture texture, int x, int y, int w, int h) {
     glEnd();
 }
 
-void DrawTextureEx(Texture texture,
+void DrawTextureEx_(Texture texture,
                    int x,
                    int y,
                    int source_x,
@@ -318,7 +321,7 @@ void DrawTextureEx(Texture texture,
         py = source_h / 2;
     }
 
-    DrawTextureEx(texture,
+    DrawTextureEx_(texture,
                   x,
                   y,
                   source_x,
