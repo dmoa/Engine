@@ -69,7 +69,7 @@ Asset_Texture LoadAsset_Texture(char *file_path) {
 }
 
 // @TODO, change strmalloc_wt to strmalloc
-Asset_Ase *LoadAsset_Ase(char *file_path) {
+Asset_Ase *LoadAsset_Ase(char* file_path) {
     Ase_Output *output = Ase_Load(file_path);
 
     // output->frame_height is not multipled by num frames because frames only go
@@ -89,8 +89,8 @@ Asset_Ase *LoadAsset_Ase(char *file_path) {
                     texture,
                     output->frame_width,
                     output->frame_height,
-                    bmalloc(Rect),
-                    bmalloc(Rect),
+                    NULL,
+                    NULL,
                     output->num_frames,
                     output->frame_durations,
                     { output->tags, output->num_tags } };
@@ -98,7 +98,7 @@ Asset_Ase *LoadAsset_Ase(char *file_path) {
     } else {
         asset = bmalloc(Asset_Ase);
         *asset = { strmalloc_wt(file_path), texture,       output->frame_width,
-                   output->frame_height,    bmalloc(Rect), bmalloc(Rect) };
+                   output->frame_height,    NULL, NULL };
 
         free(output->tags);
         for (int i = 0; i < output->num_tags; i++) {
@@ -108,8 +108,10 @@ Asset_Ase *LoadAsset_Ase(char *file_path) {
 
     for (int i = 0; i < output->num_slices; i++) {
         if (strequal(output->slices[i].name, "movement_box")) {
+            asset->movement_box = bmalloc(Rect);
             *(asset->movement_box) = output->slices[i].quad;
         } else if (strequal(output->slices[i].name, "collision_box")) {
+            asset->collision_box = bmalloc(Rect);
             *(asset->collision_box) = output->slices[i].quad;
         } else {
             print("%s: Asset_Ase slice %s not supported", file_path, output->slices[i].name);
