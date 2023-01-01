@@ -31,6 +31,10 @@ struct v3 {
         float x, y, z;
 };
 
+struct v4 {
+        float x, y, z, w;
+};
+
 struct IntRect {
         int x, y, w, h;
 };

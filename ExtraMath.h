@@ -58,6 +58,7 @@ v2 RotatePoint(float point_x, float point_y, v2* pivot_point, float angle);
 // Assuming polygon has 4 sides
 bool PolygonRectangle(v2 *vertices, FloatRect *rect);
 
+// in radians
 float AngleBetweenTwoPoints(int target_x, int target_y, int origin_x, int origin_y);
 
 

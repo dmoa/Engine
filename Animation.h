@@ -10,10 +10,13 @@ struct CurAnimation {
         Rect quad;
 };
 
+
 Animation_Tag GetTag(Tags tags, char *str);
 void Animation_Set(CurAnimation *anim, Asset_Ase_Animated *asset, char *name);
 void Animation_SetIf(CurAnimation *anim, Asset_Ase_Animated *asset, char *name);
 bool Animation_Update(CurAnimation *anim, Asset_Ase_Animated *asset);
+bool Animation_Update_CustomTick(CurAnimation *anim, Asset_Ase_Animated *asset, float dt);
+
 
 #ifdef ENGINE_IMPLEMENTATION
 
@@ -50,8 +53,26 @@ void Animation_SetIf(CurAnimation *anim, Asset_Ase_Animated *asset, char *name) 
         Animation_Set(anim, asset, name);
 }
 
+
 bool Animation_Update(CurAnimation *anim, Asset_Ase_Animated *asset) {
     anim->tick -= g_dt * 1000; // convert dt into milliseconds
+    if (anim->tick < 0) {
+        Animation_Tag t = GetTag(asset->tags, anim->name);
+        anim->frame_i = (anim->frame_i - t.from + 1) % (t.to - t.from + 1) + t.from;
+        anim->tick = asset->frame_durations[anim->frame_i];
+
+        anim->quad.x = anim->frame_i * asset->frame_width;
+
+        // Return true if an animation cycle has finished
+        if (anim->frame_i - t.from == 0)
+            return true;
+    }
+
+    return false;
+}
+
+bool Animation_Update_CustomTick(CurAnimation *anim, Asset_Ase_Animated *asset, float dt) {
+    anim->tick -= dt * 1000; // convert dt into milliseconds
     if (anim->tick < 0) {
         Animation_Tag t = GetTag(asset->tags, anim->name);
         anim->frame_i = (anim->frame_i - t.from + 1) % (t.to - t.from + 1) + t.from;

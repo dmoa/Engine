@@ -90,6 +90,7 @@ void LinkProgram(GLuint gl_program);
 
 void PrintGLError();
 
+void SetDrawColor(float r, float g, float b, float a = 1.0);
 void SetDrawOpacity(float opacity); // sets opacity for current gl program
 int AddLight(Light light); // returns index of new light
 void SendLightsToProgram(GLint current_gl_program);
@@ -118,8 +119,7 @@ GLuint CreateEmptyTexture(int width, int height) {
     // generated, GL_TEXTURE20 is the 19th texture generated and so on? I think
     // this is it but I honestly don't know, OpenGL Documentation sucks.
 
-    glActiveTexture(GL_TEXTURE0); // Does this line even need to be here? @ Question ->
-                                  // apparently yes, but no clue why :/
+    glActiveTexture(GL_TEXTURE0); // Does this line even need to be here? @ Question -> apparently yes, but no clue why :/
     glGenTextures(1, &texture);
     glBindTexture(GL_TEXTURE_2D, texture);
 
@@ -174,8 +174,7 @@ void DrawTexture(Texture texture, int x, int y, int scale) {
     glBegin(GL_QUADS);
 
     float left = gl_window_x(x);
-    float right =
-        gl_window_x(x + texture.w * scale); // (-) instead of (+) because opengl coordinate system
+    float right = gl_window_x(x + texture.w * scale); // (-) instead of (+) because opengl coordinate system
     float top = gl_window_y(y);
     float bottom = gl_window_y(y + texture.h * scale);
 
@@ -212,18 +211,7 @@ void DrawTextureStretched(Texture texture, int x, int y, int w, int h) {
     glEnd();
 }
 
-void DrawTextureEx_(Texture texture,
-                   int x,
-                   int y,
-                   int source_x,
-                   int source_y,
-                   int source_w,
-                   int source_h,
-                   int scale,
-                   bool flip_horizontally,
-                   int pivot_x,
-                   int pivot_y,
-                   float angle) {
+void DrawTextureEx_(Texture texture, int x, int y, int source_x, int source_y, int source_w, int source_h, int scale, bool flip_horizontally, int pivot_x, int pivot_y, float angle) {
     glBindTexture(GL_TEXTURE_2D, texture.gl_texture);
     glBegin(GL_QUADS);
 
@@ -350,8 +338,7 @@ Texture_Framebuffer CreateTextureFramebuffer(int w, int h, GLint default_buffer)
     // GL_COLOR_ATTACHMENT0 is there because framebuffers can have multiple color
     // attachments, so by adding GL_COLOR_ATTACHMENT0 is specifying which color
     // attachment space we're taking up.
-    glFramebufferTexture2D(
-        GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, texture_for_buffer, 0);
+    glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, texture_for_buffer, 0);
 
     if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE) {
         print("ERROR::FRAMEBUFFER:: Framebuffer is not complete!");
@@ -483,10 +470,17 @@ void PrintGLError() {
     }
 }
 
+void SetDrawColor(float r, float g, float b, float a) {
+    int current_gl_program; glGetIntegerv(GL_CURRENT_PROGRAM, & current_gl_program);
+    int variable_location = glGetUniformLocation(current_gl_program, "color_filter");
+    glUniform4f(variable_location, r, g, b, a);
+
+}
+
 void SetDrawOpacity(float opacity) {
     int current_gl_program; glGetIntegerv(GL_CURRENT_PROGRAM, & current_gl_program);
-    int variable_location = glGetUniformLocation(current_gl_program, "opacity");
-    glUniform1f(variable_location, opacity);
+    int variable_location = glGetUniformLocation(current_gl_program, "color_filter");
+    glUniform4f(variable_location, 1.0, 1.0, 1.0, opacity);
 }
 
 // Light position is 0->1 relative to the texture the light is going to be used
