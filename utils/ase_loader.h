@@ -332,7 +332,7 @@ Ase_Output *Ase_Load(std::string path) {
 
                         u16 width = GetU16(buffer_p + 22);
                         u16 height = GetU16(buffer_p + 24);
-                        u8 pixels[width * height * output->bpp];
+                        u8* pixels = bmalloc_arr(u8, width * height * output->bpp);
 
                         // have to use pixels instead of output->pixels because we need to
                         // convert the pixel position if there's more than one frame
