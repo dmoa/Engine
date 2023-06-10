@@ -11,8 +11,8 @@ struct CurAnimation {
 };
 
 
-Animation_Tag GetTag(Tags tags, char *str);
-void Animation_Set(CurAnimation *anim, Asset_Ase_Animated *asset, char *name);
+Animation_Tag GetTag(Asset_Ase_Animated *asset, char *str);
+void Animation_Set(CurAnimation *anim, Asset_Ase_Animated *asset, char *name); // pass name = "entire" to loop over all frames
 void Animation_SetIf(CurAnimation *anim, Asset_Ase_Animated *asset, char *name);
 bool Animation_Update(CurAnimation *anim, Asset_Ase_Animated *asset);
 bool Animation_Update_CustomTick(CurAnimation *anim, Asset_Ase_Animated *asset, float dt);
@@ -20,16 +20,20 @@ bool Animation_Update_CustomTick(CurAnimation *anim, Asset_Ase_Animated *asset, 
 
 #ifdef ENGINE_IMPLEMENTATION
 
-Animation_Tag GetTag(Tags tags, char *str) {
-    for (u16 i = 0; i < tags.num_tags; i++) {
-        if (strequal(tags.tags[i].name, str))
-            return tags.tags[i];
+Animation_Tag GetTag(Asset_Ase_Animated *asset, char *str) {
+
+    if (strequal(str, "entire")) return {"entire", 0, asset->num_frames - 1};
+
+    for (u16 i = 0; i < asset->tags.num_tags; i++) {
+        if (strequal(asset->tags.tags[i].name, str))
+            return asset->tags.tags[i];
     }
-    return { "", -1, -1 };
+    return {"", -1, -1 };
 }
 
 void Animation_Set(CurAnimation *anim, Asset_Ase_Animated *asset, char *name) {
-    Animation_Tag tag = GetTag(asset->tags, name);
+
+    Animation_Tag tag = GetTag(asset, name);
 
     // If animation doesn't exist, don't bother.
     // We can check if from is -1, because that is what returned from GetTag if we
@@ -39,7 +43,7 @@ void Animation_Set(CurAnimation *anim, Asset_Ase_Animated *asset, char *name) {
         return;
     }
 
-    free(anim->name); // Free will ignore if anim->name is NULL, so nothing to
+    free(anim->name); // Free() will ignore if anim->name is NULL, so nothing to
                       // worry about.
     anim->name = strmalloc(name);
 
@@ -57,7 +61,7 @@ void Animation_SetIf(CurAnimation *anim, Asset_Ase_Animated *asset, char *name) 
 bool Animation_Update(CurAnimation *anim, Asset_Ase_Animated *asset) {
     anim->tick -= g_dt * 1000; // convert dt into milliseconds
     if (anim->tick < 0) {
-        Animation_Tag t = GetTag(asset->tags, anim->name);
+        Animation_Tag t = GetTag(asset, anim->name);
         anim->frame_i = (anim->frame_i - t.from + 1) % (t.to - t.from + 1) + t.from;
         anim->tick = asset->frame_durations[anim->frame_i];
 
@@ -74,7 +78,7 @@ bool Animation_Update(CurAnimation *anim, Asset_Ase_Animated *asset) {
 bool Animation_Update_CustomTick(CurAnimation *anim, Asset_Ase_Animated *asset, float dt) {
     anim->tick -= dt * 1000; // convert dt into milliseconds
     if (anim->tick < 0) {
-        Animation_Tag t = GetTag(asset->tags, anim->name);
+        Animation_Tag t = GetTag(asset, anim->name);
         anim->frame_i = (anim->frame_i - t.from + 1) % (t.to - t.from + 1) + t.from;
         anim->tick = asset->frame_durations[anim->frame_i];
 

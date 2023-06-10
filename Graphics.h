@@ -95,6 +95,10 @@ void SetDrawOpacity(float opacity); // sets opacity for current gl program
 int AddLight(Light light); // returns index of new light
 void SendLightsToProgram(GLint current_gl_program);
 
+// If you have an animation quad, but you only want to draw part of the animated texture,
+// you can magically combine the two (with some hidden addition).
+IntRect CropAnimationQuad(IntRect animation_quad, IntRect crop_quad);
+
 #ifdef ENGINE_IMPLEMENTATION
 
 #include "ExtraMath.h"
@@ -524,6 +528,11 @@ void SendLightsToProgram(GLint gl_program) {
     variable_location = glGetUniformLocation(gl_program, "num_lights");
     glUniform1i(variable_location, g_graphics.num_lights);
 }
+
+IntRect CropAnimationQuad(IntRect animation_quad, IntRect crop_quad) {
+    return {animation_quad.x + crop_quad.x, animation_quad.y + crop_quad.y, crop_quad.w, crop_quad.h};
+}
+
 
 GlobalGraphicsData g_graphics = { 1400, 800, 2, NULL };
 

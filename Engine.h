@@ -25,7 +25,11 @@ struct v2 {
 
 struct v2i {
         int x, y;
+        bool operator==(const v2i& other) const {
+            return x == other.x && y == other.y;
+        }
 };
+
 
 struct v3 {
         float x, y, z;
