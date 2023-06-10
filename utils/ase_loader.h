@@ -90,6 +90,8 @@ inline u32 GetU32(void *memory) {
 #define USER_DATA 0x2020
 #define SLICE 0x2022
 
+#define MAX_NUM_COLORS 256
+
 struct Ase_Header {
         u32 file_size;
         u16 magic_number;
@@ -140,7 +142,7 @@ struct Color {
 struct Palette_Chunk {
         u32 num_entries;
         u8 color_key;
-        Color entries[256];
+        Color entries[MAX_NUM_COLORS];
 };
 
 // Delete and replace with SDL_Rect if using SDL
@@ -283,6 +285,12 @@ Ase_Output *Ase_Load(std::string path) {
                 switch (chunk_type) {
                     case PALETTE: {
                         output->palette.num_entries = GetU32(buffer_p + 6);
+
+                        if (output->palette.num_entries > MAX_NUM_COLORS) {
+                            print("Too many colours! %s", path.c_str());
+                            return NULL;
+                        }
+
                         // specifies the range of unique colors in the palette
                         // There may be many repeated colors, so range -> efficient.
                         u32 first_to_change = GetU32(buffer_p + 10);
@@ -298,10 +306,8 @@ Ase_Output *Ase_Load(std::string path) {
                                 Ase_Destroy_Output(output);
                                 return NULL;
                             }
-                            output->palette.entries[k] = { buffer_p[28 + k * 6],
-                                                           buffer_p[29 + k * 6],
-                                                           buffer_p[30 + k * 6],
-                                                           buffer_p[31 + k * 6] };
+                            output->palette.entries[k] = { buffer_p[28 + k * 6], buffer_p[29 + k * 6], buffer_p[30 + k * 6], buffer_p[31 + k * 6] };
+                            int a;
                         }
                         break;
                     }
@@ -330,11 +336,8 @@ Ase_Output *Ase_Load(std::string path) {
 
                         // have to use pixels instead of output->pixels because we need to
                         // convert the pixel position if there's more than one frame
-                        unsigned int data_size = Decompressor_Feed(buffer_p + 26,
-                                                                   26 - chunk_size,
-                                                                   pixels,
-                                                                   width * height * output->bpp,
-                                                                   true);
+                        unsigned int data_size = Decompressor_Feed(buffer_p + 26, 26 - chunk_size, pixels, width * height * output->bpp, true);
+
                         if (data_size == -1) {
                             printf("%s: Pixel format not supported!\n", path.c_str());
                             Ase_Destroy_Output(output);
@@ -348,10 +351,8 @@ Ase_Output *Ase_Load(std::string path) {
                         // Our offset will be larger for a spritesheet because the total
                         // width of the image would have increased (when creating a
                         // spritesheet texture from .ase). Same logic with offset_x.
-                        const int byte_offset_y =
-                            header.width * header.num_frames * y_offset * output->bpp;
-                        const int byte_offset_x =
-                            (current_frame_index * header.width + x_offset) * output->bpp;
+                        const int byte_offset_y = header.width * header.num_frames * y_offset * output->bpp;
+                        const int byte_offset_x = (current_frame_index * header.width + x_offset) * output->bpp;
                         const int byte_offset = byte_offset_x + byte_offset_y;
 
                         const int total_num_bytes = width * height * output->bpp;
@@ -424,7 +425,16 @@ Ase_Output *Ase_Load(std::string path) {
 
                         break;
                     }
+                    case LAYER:
+                        break;
+                    case COLOR_PROFILE:
+                        break;
+                    case USER_DATA:
+                        break;
+                    case OLD_PALETTE_1:
+                        break;
                     default:
+                        print("Couldn't Load Chunk Type! %i", chunk_type);
                         break;
                 }
                 buffer_p += chunk_size;
