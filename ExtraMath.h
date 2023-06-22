@@ -44,6 +44,10 @@ bool LineRect(float x1, float y1, float x2, float y2, float rx, float ry, float 
 
 bool PointRect(float x, float y, Rect *rect);
 
+bool PointRect(float x, float y, Rect rect);
+
+bool PointRect(float x, float y, float x2, float y2, float w, float h);
+
 // Not safe
 void RectToV2(FloatRect *r, v2 *vertices);
 
@@ -149,6 +153,15 @@ bool LineRect(float x1, float y1, float x2, float y2, float rx, float ry, float 
 bool PointRect(float x, float y, Rect *rect) {
     return x > rect->x && x < rect->x + rect->w && y > rect->y && y < rect->y + rect->h;
 }
+
+bool PointRect(float x, float y, Rect rect) {
+    return x > rect.x && x < rect.x + rect.w && y > rect.y && y < rect.y + rect.h;
+}
+
+bool PointRect(float x, float y, float x2, float y2, float w, float h) {
+    return x > x2 && x < x2 + w && y > y2 && y < y2 + h;
+}
+
 
 // Not safe
 
