@@ -68,6 +68,7 @@ Asset_Texture LoadAsset_Texture(char *file_path) {
     return { texture.gl_texture, texture.w, texture.h, strmalloc(file_path) };
 }
 
+
 // @TODO, change strmalloc_wt to strmalloc
 Asset_Ase *LoadAsset_Ase(char* file_path) {
     Ase_Output *output = Ase_Load(file_path);
@@ -79,8 +80,7 @@ Asset_Ase *LoadAsset_Ase(char* file_path) {
         return NULL;
     }
 
-    Texture texture = CreateTexture(
-        output->frame_width * output->num_frames, output->frame_height, output->pixels);
+    Texture texture = CreateTexture(output->frame_width * output->num_frames, output->frame_height, output->pixels);
 
     Asset_Ase *asset;
     if (output->num_frames > 1) {
@@ -95,10 +95,10 @@ Asset_Ase *LoadAsset_Ase(char* file_path) {
                     output->frame_durations,
                     { output->tags, output->num_tags } };
         asset = (Asset_Ase *)_asset;
-    } else {
+    }
+    else {
         asset = bmalloc(Asset_Ase);
-        *asset = { strmalloc_wt(file_path), texture,       output->frame_width,
-                   output->frame_height,    NULL, NULL };
+        *asset = { strmalloc_wt(file_path), texture, output->frame_width, output->frame_height, NULL, NULL };
 
         free(output->tags);
         for (int i = 0; i < output->num_tags; i++) {
@@ -110,10 +110,12 @@ Asset_Ase *LoadAsset_Ase(char* file_path) {
         if (strequal(output->slices[i].name, "movement_box")) {
             asset->movement_box = bmalloc(Rect);
             *(asset->movement_box) = output->slices[i].quad;
-        } else if (strequal(output->slices[i].name, "collision_box")) {
+        }
+        else if (strequal(output->slices[i].name, "collision_box")) {
             asset->collision_box = bmalloc(Rect);
             *(asset->collision_box) = output->slices[i].quad;
-        } else {
+        }
+        else {
             print("%s: Asset_Ase slice %s not supported", file_path, output->slices[i].name);
         }
     }
@@ -131,14 +133,17 @@ Asset_Ase *LoadAsset_Ase(char* file_path) {
     return asset;
 }
 
+
 Asset_Ase_Animated *LoadAsset_Ase_Animated(char *file_path) {
     return (Asset_Ase_Animated *)LoadAsset_Ase(file_path);
 }
+
 
 void DestroyAsset_Texture(Asset_Texture image) {
     // free(image.file_path);
     glDeleteTextures(1, &image.gl_texture);
 }
+
 
 void DestroyAsset_Ase(Asset_Ase *a) {
     free(a->file_path);
@@ -148,6 +153,7 @@ void DestroyAsset_Ase(Asset_Ase *a) {
 
     free(a);
 }
+
 
 void DestroyAsset_Ase_Animated(Asset_Ase_Animated *a) {
     // Copying out DestroyAsset_Ase function because if we don't then we free it

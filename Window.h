@@ -117,6 +117,7 @@ void Window::Init() {
 
 }
 
+
 void Window::Clear() {
     glClearColor(0.0, 0.3, 0.5, 1.0); // navy blue
     glBindFramebuffer(GL_FRAMEBUFFER, gameplay_target.framebuffer);
@@ -132,6 +133,7 @@ void Window::Clear() {
     glClear(GL_COLOR_BUFFER_BIT);
 }
 
+
 void Window::Resized(int new_w, int new_h) {
     g_graphics.w = new_w;
     g_graphics.h = new_h;
@@ -140,15 +142,18 @@ void Window::Resized(int new_w, int new_h) {
     ResizeTextureFramebuffer(&overlay_target, new_w / g_graphics.scale, new_h / g_graphics.scale);
 }
 
+
 void Window::SetDrawGameplay() {
     SetCurrentFramebuffer(&gameplay_target);
     glUseProgram(gl_program_default);
 }
 
+
 void Window::SetDrawOverlay() {
     SetCurrentFramebuffer(&overlay_target);
     glUseProgram(gl_program_default);
 }
+
 
 void Window::Present() {
     glUseProgram(gl_program_default);
@@ -165,6 +170,7 @@ void Window::Present() {
 
     SDL_GL_SwapWindow(window);
 }
+
 
 void Window::Shutdown() {
     FreeTextureFramebuffer(&gameplay_target);

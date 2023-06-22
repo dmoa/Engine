@@ -62,6 +62,7 @@ struct FloatRect {
 
 // SDL cross platform includes
 #include <SDL2/SDL.h>
+#include <SDL2/SDL_mixer.h>
 #include <SDL2/SDL_opengl.h>
 
 // printf + SDL does not work (something to do with SDL redirecting the entry
@@ -107,6 +108,7 @@ struct FloatRect {
 #include "Animation.h"
 #include "ExtraMath.h"
 #include "utils/gltext.h"
+#include "Sound.h"
 
 void EngineInit();
 void EngineQuit();
@@ -115,6 +117,8 @@ void EngineQuit();
 
 void EngineInit() {
     SDL_Init(SDL_INIT_EVERYTHING);
+    assert(SDL_Init(SDL_INIT_AUDIO) == 0);
+    assert(Mix_OpenAudio(44100, MIX_DEFAULT_FORMAT, 2, 2048) == 0);
     IMG_Init(IMG_INIT_PNG);
     srand(time(0));
     g_controls.Init();

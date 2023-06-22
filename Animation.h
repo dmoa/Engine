@@ -31,6 +31,7 @@ Animation_Tag GetTag(Asset_Ase_Animated *asset, char *str) {
     return {"", -1, -1 };
 }
 
+
 void Animation_Set(CurAnimation *anim, Asset_Ase_Animated *asset, char *name) {
 
     Animation_Tag tag = GetTag(asset, name);
@@ -51,6 +52,7 @@ void Animation_Set(CurAnimation *anim, Asset_Ase_Animated *asset, char *name) {
     anim->tick = asset->frame_durations[anim->frame_i];
     anim->quad = { anim->frame_i * asset->frame_width, 0, asset->frame_width, asset->frame_height };
 }
+
 
 void Animation_SetIf(CurAnimation *anim, Asset_Ase_Animated *asset, char *name) {
     if (!strequal(name, anim->name))
@@ -74,6 +76,7 @@ bool Animation_Update(CurAnimation *anim, Asset_Ase_Animated *asset) {
 
     return false;
 }
+
 
 bool Animation_Update_CustomTick(CurAnimation *anim, Asset_Ase_Animated *asset, float dt) {
     anim->tick -= dt * 1000; // convert dt into milliseconds

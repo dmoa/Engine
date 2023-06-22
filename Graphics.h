@@ -53,7 +53,7 @@ void DrawTexture(Texture texture, int x = 0, int y = 0, int scale = 1);
 void DrawTextureStretched(Texture texture, int x, int y, int w, int h);
 // pivot is relative
 
-// Without _, clang build complains that the functions are ambiguous,
+// Without _, clang build complains that the two DrawTextureEx functions are ambiguous,
 // i.e. doesn't know which function call I want. It is what it is.
 void DrawTextureEx_(Texture texture,
                    int x,
@@ -108,10 +108,12 @@ float gl_window_x(float x) {
     return x / g_graphics.framebuffer_w * 2 - 1;
 }
 
+
 // For some reason we need to cast the integer variables but not 2 or 1. *shrug*
 float gl_window_y(float y) {
     return 1 - (2 * (float)y / (float)g_graphics.framebuffer_h);
 }
+
 
 // We don't need to use glActiveTexture because we're not actually blending
 // anything (I know, very basic)
@@ -142,6 +144,7 @@ GLuint CreateEmptyTexture(int width, int height) {
     return texture;
 };
 
+
 // Default input format is RGBA
 Texture CreateTexture(int width, int height, void *pixels, GLenum format) {
     Texture texture;
@@ -169,9 +172,11 @@ Texture CreateTexture(int width, int height, void *pixels, GLenum format) {
     return texture;
 };
 
+
 void FreeTexture(Texture texture) {
     glDeleteTextures(1, &texture.gl_texture);
 };
+
 
 void DrawTexture(Texture texture, int x, int y, int scale) {
     glBindTexture(GL_TEXTURE_2D, texture.gl_texture);
@@ -194,6 +199,7 @@ void DrawTexture(Texture texture, int x, int y, int scale) {
     glEnd();
 }
 
+
 void DrawTextureStretched(Texture texture, int x, int y, int w, int h) {
     glBindTexture(GL_TEXTURE_2D, texture.gl_texture);
     glBegin(GL_QUADS);
@@ -214,6 +220,7 @@ void DrawTextureStretched(Texture texture, int x, int y, int w, int h) {
 
     glEnd();
 }
+
 
 void DrawTextureEx_(Texture texture, int x, int y, int source_x, int source_y, int source_w, int source_h, int scale, bool flip_horizontally, int pivot_x, int pivot_y, float angle) {
     glBindTexture(GL_TEXTURE_2D, texture.gl_texture);
@@ -281,6 +288,7 @@ void DrawTextureEx_(Texture texture, int x, int y, int source_x, int source_y, i
     glEnd();
 }
 
+
 void DrawTextureEx(Texture texture,
                    int x,
                    int y,
@@ -327,6 +335,7 @@ void DrawTextureEx(Texture texture,
                   angle);
 }
 
+
 Texture_Framebuffer CreateTextureFramebuffer(int w, int h, GLint default_buffer) {
     GLuint framebuffer;
     glGenFramebuffers(1, &framebuffer); // makes the buffer
@@ -353,6 +362,7 @@ Texture_Framebuffer CreateTextureFramebuffer(int w, int h, GLint default_buffer)
     return { { texture_for_buffer, w, h }, framebuffer };
 }
 
+
 void ResizeTextureFramebuffer(Texture_Framebuffer *texture_framebuffer, int w, int h) {
     FreeTexture(texture_framebuffer->texture);
     texture_framebuffer->texture.gl_texture = CreateEmptyTexture(w, h);
@@ -366,10 +376,12 @@ void ResizeTextureFramebuffer(Texture_Framebuffer *texture_framebuffer, int w, i
                            0);
 }
 
+
 void FreeTextureFramebuffer(Texture_Framebuffer *texture_framebuffer) {
     FreeTexture(texture_framebuffer->texture);
     glDeleteFramebuffers(1, &texture_framebuffer->framebuffer);
 }
+
 
 void SetCurrentFramebuffer(Texture_Framebuffer *texture_framebuffer) {
     // If not a texture framebuffer, then set the framebuffer to be the window.
@@ -387,6 +399,7 @@ void SetCurrentFramebuffer(Texture_Framebuffer *texture_framebuffer) {
     }
 }
 
+
 // this is yuky, redo it better
 void SetCurrentFramebuffer(GLint default_buffer) {
     // If not a texture framebuffer, then set the framebuffer to be the window.
@@ -396,6 +409,7 @@ void SetCurrentFramebuffer(GLint default_buffer) {
     glBindFramebuffer(GL_FRAMEBUFFER, default_buffer);
     glDrawBuffer(GL_BACK);
 }
+
 
 GLuint LoadShader(char *path, GLenum shader_type) {
     char *file = LoadFile(path);
@@ -423,6 +437,7 @@ GLuint LoadShader(char *path, GLenum shader_type) {
     return shader;
 }
 
+
 void LinkProgram(GLuint gl_program) {
     // Apparently creates an executable, which CompileShader doesn't do?! OpenGL
     // is weird like that / I don't know enough 3D graphics.
@@ -444,6 +459,7 @@ void LinkProgram(GLuint gl_program) {
         print("Failed to link program!");
     }
 }
+
 
 void PrintGLError() {
     GLenum error_code;
@@ -474,6 +490,7 @@ void PrintGLError() {
     }
 }
 
+
 void SetDrawColor(float r, float g, float b, float a) {
     int current_gl_program; glGetIntegerv(GL_CURRENT_PROGRAM, & current_gl_program);
     int variable_location = glGetUniformLocation(current_gl_program, "color_filter");
@@ -481,11 +498,13 @@ void SetDrawColor(float r, float g, float b, float a) {
 
 }
 
+
 void SetDrawOpacity(float opacity) {
     int current_gl_program; glGetIntegerv(GL_CURRENT_PROGRAM, & current_gl_program);
     int variable_location = glGetUniformLocation(current_gl_program, "color_filter");
     glUniform4f(variable_location, 1.0, 1.0, 1.0, opacity);
 }
+
 
 // Light position is 0->1 relative to the texture the light is going to be used
 // in. (OpenGL Texture Coordinate Format basically).
@@ -499,6 +518,7 @@ int AddLight(Light light) {
 
     return g_graphics.num_lights++;
 }
+
 
 // 99.999% of the time (not exaggerated at all), the gl_program will be
 // gameplay_program. But, putting gameplay_program in g_graphics to avoid
