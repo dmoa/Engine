@@ -364,6 +364,10 @@ Ase_Output *Ase_Load(std::string path) {
                             output->pixels[index] = pixels[k];
                         }
 
+                        // Free the temporary pixel array that we used to transfer the data into the actual
+                        // pixel array output->pixels.
+                        free(pixels);
+
                         break;
                     }
 
