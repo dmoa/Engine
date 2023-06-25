@@ -153,7 +153,7 @@ Texture CreateTexture(int width, int height, void *pixels, GLenum format) {
 
     // Note for self: glGenTextures can generate multiple textures, but we just
     // want one, hence the 1.
-    glGenTextures(1, &texture.gl_texture);
+    glGenTextures(1, & texture.gl_texture);
     glBindTexture(GL_TEXTURE_2D, texture.gl_texture);
 
     // Lots of defaults here, but setting them just in case
@@ -174,7 +174,7 @@ Texture CreateTexture(int width, int height, void *pixels, GLenum format) {
 
 
 void FreeTexture(Texture texture) {
-    glDeleteTextures(1, &texture.gl_texture);
+    glDeleteTextures(1, & texture.gl_texture);
 };
 
 

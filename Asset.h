@@ -58,7 +58,7 @@ Asset_Texture LoadAsset_Texture(char *file_path) {
     void *pixels = stbi_load(file_path, &width, &height, &num_channels, 0);
     auto format = (num_channels == 3) ? GL_RGB : GL_RGBA;
 
-    if (!pixels)
+    if (! pixels)
         print("Couldn't load %s", file_path);
     // if (format != GL_RGBA) print("%s: Warning: format is not GL_RGBA",
     // file_path);
@@ -141,7 +141,7 @@ Asset_Ase_Animated *LoadAsset_Ase_Animated(char *file_path) {
 
 void DestroyAsset_Texture(Asset_Texture image) {
     // free(image.file_path);
-    glDeleteTextures(1, &image.gl_texture);
+    glDeleteTextures(1, & image.gl_texture);
 }
 
 
