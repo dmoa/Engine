@@ -11,26 +11,30 @@
 #define MAX_NUM_LIGHTS 64
 
 struct Light {
-        v2 position; // normalised
-        v3 color;    // 0->1
-        float power;
+    v2 position; // normalised
+    v3 color;    // 0->1
+    float power;
 };
 
 struct GlobalGraphicsData {
-        int w; // window width
-        int h; // window height
-        int scale;
-        SDL_Renderer *rdr;
+    int w; // window width
+    int h; // window height
+    int scale;
 
-        // Current framebuffer dimensions
-        int framebuffer_w;
-        int framebuffer_h;
+    // Current framebuffer dimensions
+    int framebuffer_w;
+    int framebuffer_h;
 
-        int num_lights = 0;
-        Light lights[MAX_NUM_LIGHTS];
-        // where gameplay is drawn from
-        int gameplay_target_x;
-        int gameplay_target_y;
+    int num_lights = 0;
+    Light lights[MAX_NUM_LIGHTS];
+    // where gameplay is drawn from
+    int gameplay_target_x;
+    int gameplay_target_y;
+
+    // Graphics has to have memory of what the previous gl program was
+    // so that BeginDrawTextureShrink and EndDrawTextureShrink works.
+    GLint previous_gl_program;
+    GLint gl_program_posteffects_gameplay;
 };
 
 extern GlobalGraphicsData g_graphics;
@@ -51,6 +55,8 @@ Texture CreateTexture(int width, int height, void *pixels, GLenum format = GL_RG
 void FreeTexture(Texture texture);
 void DrawTexture(Texture texture, int x = 0, int y = 0, int scale = 1);
 void DrawTextureStretched(Texture texture, int x, int y, int w, int h);
+void BeginDrawTextureShrunk(float shrink_ticker);
+void EndDrawTextureShrunk();
 // pivot is relative
 
 // Without _, clang build complains that the two DrawTextureEx functions are ambiguous,
@@ -99,7 +105,14 @@ void SendLightsToProgram(GLint current_gl_program);
 // you can magically combine the two (with some hidden addition).
 IntRect CropAnimationQuad(IntRect animation_quad, IntRect crop_quad);
 
+// parameters should be non-normalised.
+void AlignShaderCenter(float offset_x, float offset_y, float true_width, float true_height);
+
+
+
 #ifdef ENGINE_IMPLEMENTATION
+
+
 
 #include "ExtraMath.h"
 #include "Window.h"
@@ -219,6 +232,21 @@ void DrawTextureStretched(Texture texture, int x, int y, int w, int h) {
     glVertex2f(left, bottom); // Bottom Left Corner
 
     glEnd();
+}
+
+
+void BeginDrawTextureShrunk(float shrink_ticker) {
+    glGetIntegerv(GL_CURRENT_PROGRAM, & g_graphics.previous_gl_program);
+
+    glUseProgram(g_graphics.gl_program_posteffects_gameplay);
+
+    int variable_location = glGetUniformLocation(g_graphics.gl_program_posteffects_gameplay, "u_time");
+    glUniform1f(variable_location, shrink_ticker);
+}
+
+
+void EndDrawTextureShrunk() {
+    glUseProgram(g_graphics.previous_gl_program);
 }
 
 
@@ -554,6 +582,17 @@ IntRect CropAnimationQuad(IntRect animation_quad, IntRect crop_quad) {
 }
 
 
-GlobalGraphicsData g_graphics = { 1400, 800, 2, NULL };
+void AlignShaderCenter(float offset_x, float offset_y, float true_width, float true_height) {
+    int current_gl_program; glGetIntegerv(GL_CURRENT_PROGRAM, & current_gl_program);
+    int variable_location = glGetUniformLocation(current_gl_program, "texture_offset");
+    glUniform2f(variable_location, offset_x, offset_y);
+    int variable_location_2 = glGetUniformLocation(current_gl_program, "texture_size");
+    glUniform2f(variable_location_2, true_width, true_height);
+    print("%f %f %i %i", offset_x, offset_y, variable_location, variable_location_2);
+}
+
+
+
+GlobalGraphicsData g_graphics = { 1400, 800, 2};
 
 #endif

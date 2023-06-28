@@ -5,29 +5,29 @@
 #include "utils/gltext.h"
 
 struct Window {
-        void Init();
-        void Clear();
-        void Resized(int new_w, int new_h);
-        void SetDrawGameplay();
-        void SetDrawOverlay();
-        void Present();
-        void Shutdown();
+    void Init();
+    void Clear();
+    void Resized(int new_w, int new_h);
+    void SetDrawGameplay();
+    void SetDrawOverlay();
+    void Present();
+    void Shutdown();
 
-        int desktop_w;
-        int desktop_h;
-        SDL_Window *window;
-        SDL_GLContext gl_context = NULL;
-        GLint gl_program_default;
-        GLint gl_program_posteffects_gameplay;
-        GLint default_framebuffer;
+    int desktop_w;
+    int desktop_h;
+    SDL_Window *window;
+    SDL_GLContext gl_context = NULL;
+    GLint gl_program_default;
+    GLint default_framebuffer;
 
-        Texture_Framebuffer gameplay_target;
-        Texture_Framebuffer overlay_target;
+    Texture_Framebuffer gameplay_target;
+    Texture_Framebuffer overlay_target;
 
-        // @TODO Fix this crap
-        SDL_Texture *other_texture;
-        Rect other_texture_rect;
-        SDL_Surface *icon;
+    // @TODO Fix this crap
+    SDL_Texture *other_texture;
+    Rect other_texture_rect;
+    SDL_Surface *icon;
+    float ticker = 0.0;
 };
 
 #ifdef ENGINE_IMPLEMENTATION
@@ -74,7 +74,7 @@ void Window::Init() {
     // Now that we've created the window and all the opengl stuff we need,
     // we actually need to put the two together (window + opengl components).
     gl_program_default = glCreateProgram();
-    gl_program_posteffects_gameplay = glCreateProgram();
+    g_graphics.gl_program_posteffects_gameplay = glCreateProgram();
 
     GLuint vert = LoadShader("Include/Engine/Shaders/default.vert", GL_VERTEX_SHADER);
     GLuint frag = LoadShader("Include/Engine/Shaders/default.frag", GL_FRAGMENT_SHADER);
@@ -86,12 +86,15 @@ void Window::Init() {
     glDeleteShader(vert);
     glDeleteShader(frag);
 
-    GLuint frag_2 = LoadShader("Include/Engine/Shaders/default_2.frag", GL_FRAGMENT_SHADER);
-    glAttachShader(gl_program_posteffects_gameplay, vert);
-    glAttachShader(gl_program_posteffects_gameplay, frag_2);
+    // GLuint frag_2 = LoadShader("Include/Engine/Shaders/default_2.frag", GL_FRAGMENT_SHADER);
+    GLuint vert_2 = LoadShader("Include/Engine/Shaders/explosion.vert", GL_VERTEX_SHADER);
+    GLuint frag_2 = LoadShader("Include/Engine/Shaders/explosion.frag", GL_FRAGMENT_SHADER);
+    glAttachShader(g_graphics.gl_program_posteffects_gameplay, vert_2);
+    glAttachShader(g_graphics.gl_program_posteffects_gameplay, frag_2);
 
-    LinkProgram(gl_program_posteffects_gameplay);
+    LinkProgram(g_graphics.gl_program_posteffects_gameplay);
     glDeleteShader(frag_2);
+    glDeleteShader(vert_2);
 
     // Going to finally activate the default shaders that we wanted to use at the
     // beginning
@@ -157,18 +160,28 @@ void Window::SetDrawOverlay() {
 
 void Window::Present() {
     glUseProgram(gl_program_default);
+    SetDrawColor(1.0, 1.0, 1.0, 1.0);
     SetCurrentFramebuffer(default_framebuffer);
-    // glUseProgram(gl_program_posteffects_gameplay);
-    // SendLightsToProgram(gl_program_posteffects_gameplay);
+
+    // glUseProgram(g_graphics.gl_program_posteffects_gameplay);
+    // SetDrawColor(1.0, 1.0, 1.0, 1.0);
+    // int variable_location = glGetUniformLocation(g_graphics.gl_program_posteffects_gameplay, "u_time");
+    // if (variable_location == -1) print("Location Error!");
+    // glUniform1f(variable_location, ticker);
+    // // SendLightsToProgram(g_graphics.gl_program_posteffects_gameplay);
 
     DrawTexture(gameplay_target.texture, g_graphics.gameplay_target_x, g_graphics.gameplay_target_y, g_graphics.scale);
 
     // the gameplay window is scaled because we want to enlarge the small pixel art grid.
     // DrawTexture(gameplay_target.texture);
 
+    glUseProgram(gl_program_default);
+    SetDrawColor(1.0, 1.0, 1.0, 1.0);
     DrawTexture(overlay_target.texture, 0, 0, g_graphics.scale);
 
     SDL_GL_SwapWindow(window);
+
+    ticker += g_dt / 10;
 }
 
 
@@ -177,7 +190,7 @@ void Window::Shutdown() {
     FreeTextureFramebuffer(&overlay_target);
 
     glDeleteProgram(gl_program_default);
-    glDeleteProgram(gl_program_posteffects_gameplay);
+    glDeleteProgram(g_graphics.gl_program_posteffects_gameplay);
     // Don't need to delete shaders because they'll be auto-deleted when we delete
     // the program.
 

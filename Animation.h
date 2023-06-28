@@ -3,22 +3,26 @@
 #include "Engine.h"
 #include "Asset.h"
 
-struct CurAnimation {
+struct Animation {
         char *name = NULL;
         int frame_i;
         float tick;
         Rect quad;
 };
 
+#define TAG_ERROR_VAL 65535
 
 Animation_Tag GetTag(Asset_Ase_Animated *asset, char *str);
-void Animation_Set(CurAnimation *anim, Asset_Ase_Animated *asset, char *name); // pass name = "entire" to loop over all frames
-void Animation_SetIf(CurAnimation *anim, Asset_Ase_Animated *asset, char *name);
-bool Animation_Update(CurAnimation *anim, Asset_Ase_Animated *asset);
-bool Animation_Update_CustomTick(CurAnimation *anim, Asset_Ase_Animated *asset, float dt);
+void Animation_Set(Animation *anim, Asset_Ase_Animated *asset, char *name); // pass name = "entire" to loop over all frames
+void Animation_SetIf(Animation *anim, Asset_Ase_Animated *asset, char *name);
+bool Animation_Update(Animation *anim, Asset_Ase_Animated *asset);
+bool Animation_Update_CustomTick(Animation *anim, Asset_Ase_Animated *asset, float dt);
+
 
 
 #ifdef ENGINE_IMPLEMENTATION
+
+
 
 Animation_Tag GetTag(Asset_Ase_Animated *asset, char *str) {
 
@@ -28,18 +32,18 @@ Animation_Tag GetTag(Asset_Ase_Animated *asset, char *str) {
         if (strequal(asset->tags.tags[i].name, str))
             return asset->tags.tags[i];
     }
-    return {"", -1, -1 };
+    return {"", TAG_ERROR_VAL, TAG_ERROR_VAL};
 }
 
 
-void Animation_Set(CurAnimation *anim, Asset_Ase_Animated *asset, char *name) {
+void Animation_Set(Animation *anim, Asset_Ase_Animated *asset, char *name) {
 
     Animation_Tag tag = GetTag(asset, name);
 
     // If animation doesn't exist, don't bother.
-    // We can check if from is -1, because that is what returned from GetTag if we
+    // We can check if from is TAG_ERROR_VAL, because that is what returned from GetTag if we
     // can't find the animation.
-    if (tag.from == -1) {
+    if (tag.from == TAG_ERROR_VAL) {
         print("Failed to set animation %s for asset %s\n", name, asset->file_path);
         return;
     }
@@ -54,13 +58,13 @@ void Animation_Set(CurAnimation *anim, Asset_Ase_Animated *asset, char *name) {
 }
 
 
-void Animation_SetIf(CurAnimation *anim, Asset_Ase_Animated *asset, char *name) {
+void Animation_SetIf(Animation *anim, Asset_Ase_Animated *asset, char *name) {
     if (!strequal(name, anim->name))
         Animation_Set(anim, asset, name);
 }
 
 
-bool Animation_Update(CurAnimation *anim, Asset_Ase_Animated *asset) {
+bool Animation_Update(Animation *anim, Asset_Ase_Animated *asset) {
     anim->tick -= g_dt * 1000; // convert dt into milliseconds
     if (anim->tick < 0) {
         Animation_Tag t = GetTag(asset, anim->name);
@@ -78,7 +82,7 @@ bool Animation_Update(CurAnimation *anim, Asset_Ase_Animated *asset) {
 }
 
 
-bool Animation_Update_CustomTick(CurAnimation *anim, Asset_Ase_Animated *asset, float dt) {
+bool Animation_Update_CustomTick(Animation *anim, Asset_Ase_Animated *asset, float dt) {
     anim->tick -= dt * 1000; // convert dt into milliseconds
     if (anim->tick < 0) {
         Animation_Tag t = GetTag(asset, anim->name);

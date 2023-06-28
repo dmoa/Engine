@@ -39,7 +39,7 @@ struct Asset_Ase_Animated : Asset_Ase {
 };
 
 Asset_Texture LoadAsset_Texture(char *file_path);
-Asset_Ase *LoadAsset_Ase(char *file_path);
+Asset_Ase *LoadAsset_Ase(char* file_path, bool* is_animated = NULL);
 Asset_Ase_Animated *LoadAsset_Ase_Animated(char *file_path);
 
 void DestroyAsset_Texture(Asset_Texture image);
@@ -70,7 +70,7 @@ Asset_Texture LoadAsset_Texture(char *file_path) {
 
 
 // @TODO, change strmalloc_wt to strmalloc
-Asset_Ase *LoadAsset_Ase(char* file_path) {
+Asset_Ase *LoadAsset_Ase(char* file_path, bool* is_animated) {
     Ase_Output *output = Ase_Load(file_path);
 
     // output->frame_height is not multipled by num frames because frames only go
@@ -95,6 +95,7 @@ Asset_Ase *LoadAsset_Ase(char* file_path) {
                     output->frame_durations,
                     { output->tags, output->num_tags } };
         asset = (Asset_Ase *)_asset;
+
     }
     else {
         asset = bmalloc(Asset_Ase);
@@ -118,6 +119,10 @@ Asset_Ase *LoadAsset_Ase(char* file_path) {
         else {
             print("%s: Asset_Ase slice %s not supported", file_path, output->slices[i].name);
         }
+    }
+
+    if (is_animated != NULL) {
+        *is_animated = output->num_frames > 1;
     }
 
     // Not using Ase_Destroy_Output() because we still want to use
