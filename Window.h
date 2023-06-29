@@ -9,6 +9,7 @@ struct Window {
     void Clear();
     void Resized(int new_w, int new_h);
     void SetDrawGameplay();
+    void SetDrawBackground();
     void SetDrawOverlay();
     void Present();
     void Shutdown();
@@ -21,6 +22,7 @@ struct Window {
     GLint default_framebuffer;
 
     Texture_Framebuffer gameplay_target;
+    Texture_Framebuffer background_target;
     Texture_Framebuffer overlay_target;
 
     // @TODO Fix this crap
@@ -65,11 +67,14 @@ void Window::Init() {
     glGetIntegerv(GL_FRAMEBUFFER_BINDING, &default_framebuffer);
     print("default buff %i", default_framebuffer);
 
-    gameplay_target = CreateTextureFramebuffer(512, 512, default_framebuffer);
+    // @TODO hacked together, make this less shit.
+    g_graphics.gameplay_target_w = 512;
+    g_graphics.gameplay_target_h = 512;
+    gameplay_target = CreateTextureFramebuffer(g_graphics.gameplay_target_w, g_graphics.gameplay_target_h, default_framebuffer);
     // Overlay target is the size of the screen (* scale), but we resize it if
     // window is resized.
-    overlay_target = CreateTextureFramebuffer(
-        g_graphics.w / g_graphics.scale, g_graphics.h / g_graphics.scale, default_framebuffer);
+    overlay_target = CreateTextureFramebuffer(g_graphics.w / g_graphics.scale, g_graphics.h / g_graphics.scale, default_framebuffer);
+    background_target = CreateTextureFramebuffer(g_graphics.w / g_graphics.scale, g_graphics.h / g_graphics.scale, default_framebuffer);
 
     // Now that we've created the window and all the opengl stuff we need,
     // we actually need to put the two together (window + opengl components).
@@ -87,8 +92,8 @@ void Window::Init() {
     glDeleteShader(frag);
 
     // GLuint frag_2 = LoadShader("Include/Engine/Shaders/default_2.frag", GL_FRAGMENT_SHADER);
-    GLuint vert_2 = LoadShader("Include/Engine/Shaders/explosion.vert", GL_VERTEX_SHADER);
-    GLuint frag_2 = LoadShader("Include/Engine/Shaders/explosion.frag", GL_FRAGMENT_SHADER);
+    GLuint frag_2 = LoadShader("Include/Engine/Shaders/default_2.frag", GL_FRAGMENT_SHADER);
+    GLuint vert_2 = LoadShader("Include/Engine/Shaders/default.vert", GL_VERTEX_SHADER);
     glAttachShader(g_graphics.gl_program_posteffects_gameplay, vert_2);
     glAttachShader(g_graphics.gl_program_posteffects_gameplay, frag_2);
 
@@ -118,6 +123,8 @@ void Window::Init() {
     // text
     gltInit();
 
+
+    SDL_ShowCursor(SDL_DISABLE);
 }
 
 
@@ -128,6 +135,10 @@ void Window::Clear() {
 
     glClearColor(0.0, 0.0, 0.0, 0.0); // grey
     glBindFramebuffer(GL_FRAMEBUFFER, overlay_target.framebuffer);
+    glClear(GL_COLOR_BUFFER_BIT);
+
+    glClearColor(0.0, 0.0, 0.0, 0.0); // grey
+    glBindFramebuffer(GL_FRAMEBUFFER, background_target.framebuffer);
     glClear(GL_COLOR_BUFFER_BIT);
 
     glClearColor(0.5, 0.5, 0.5, 1); // grey
@@ -142,7 +153,8 @@ void Window::Resized(int new_w, int new_h) {
     g_graphics.h = new_h;
     g_graphics.gameplay_target_x = (g_graphics.w - gameplay_target.texture.w * g_graphics.scale) / 2;
     g_graphics.gameplay_target_y = (g_graphics.h - gameplay_target.texture.h * g_graphics.scale) / 2;
-    ResizeTextureFramebuffer(&overlay_target, new_w / g_graphics.scale, new_h / g_graphics.scale);
+    ResizeTextureFramebuffer(& overlay_target, new_w / g_graphics.scale, new_h / g_graphics.scale);
+    ResizeTextureFramebuffer(& background_target, new_w / g_graphics.scale, new_h / g_graphics.scale);
 }
 
 
@@ -152,8 +164,14 @@ void Window::SetDrawGameplay() {
 }
 
 
+void Window::SetDrawBackground() {
+    SetCurrentFramebuffer(& background_target);
+    glUseProgram(gl_program_default);
+}
+
+
 void Window::SetDrawOverlay() {
-    SetCurrentFramebuffer(&overlay_target);
+    SetCurrentFramebuffer(& overlay_target);
     glUseProgram(gl_program_default);
 }
 
@@ -163,13 +181,14 @@ void Window::Present() {
     SetDrawColor(1.0, 1.0, 1.0, 1.0);
     SetCurrentFramebuffer(default_framebuffer);
 
-    // glUseProgram(g_graphics.gl_program_posteffects_gameplay);
-    // SetDrawColor(1.0, 1.0, 1.0, 1.0);
-    // int variable_location = glGetUniformLocation(g_graphics.gl_program_posteffects_gameplay, "u_time");
-    // if (variable_location == -1) print("Location Error!");
-    // glUniform1f(variable_location, ticker);
-    // // SendLightsToProgram(g_graphics.gl_program_posteffects_gameplay);
 
+    glUseProgram(gl_program_default);
+    SetDrawColor(1.0, 1.0, 1.0, 1.0);
+    DrawTexture(background_target.texture, 0, 0, g_graphics.scale);
+
+    glUseProgram(g_graphics.gl_program_posteffects_gameplay);
+    SetDrawColor(1.0, 1.0, 1.0, 1.0);
+    SendLightsToProgram(g_graphics.gl_program_posteffects_gameplay);
     DrawTexture(gameplay_target.texture, g_graphics.gameplay_target_x, g_graphics.gameplay_target_y, g_graphics.scale);
 
     // the gameplay window is scaled because we want to enlarge the small pixel art grid.

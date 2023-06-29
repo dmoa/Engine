@@ -30,6 +30,8 @@ struct GlobalGraphicsData {
     // where gameplay is drawn from
     int gameplay_target_x;
     int gameplay_target_y;
+    int gameplay_target_w; // before scaling
+    int gameplay_target_h;
 
     // Graphics has to have memory of what the previous gl program was
     // so that BeginDrawTextureShrink and EndDrawTextureShrink works.
