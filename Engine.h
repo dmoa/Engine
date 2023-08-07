@@ -62,7 +62,6 @@ struct FloatRect {
 
 // SDL cross platform includes
 #include <SDL2/SDL.h>
-#include <SDL2/SDL_mixer.h>
 #include <SDL2/SDL_opengl.h>
 
 // printf + SDL does not work (something to do with SDL redirecting the entry
@@ -86,12 +85,15 @@ struct FloatRect {
 #ifdef _WIN32
 #include <SDL2/SDL_image.h>
 #include <SDL2/SDL_ttf.h>
+#include <SDL2/SDL_mixer.h>
 #elif __linux__
 #include <SDL2/SDL_image.h>
+#include <SDL2/SDL_mixer.h>
 #include <SDL2/SDL_ttf.h>
 #else
 #include <SDL2_image/SDL_image.h>
 #include <SDL2_ttf/SDL_ttf.h>
+#include <SDL2_mixer/SDL_mixer.h>
 #endif
 
 #ifdef ENGINE_IMPLEMENTATION
@@ -113,10 +115,15 @@ struct FloatRect {
 void EngineInit();
 void EngineQuit();
 
+
+
 #ifdef ENGINE_IMPLEMENTATION
+
+
 
 void EngineInit() {
     SDL_Init(SDL_INIT_EVERYTHING);
+    assert(TTF_Init() == 0);
     assert(SDL_Init(SDL_INIT_AUDIO) == 0);
     assert(Mix_OpenAudio(44100, MIX_DEFAULT_FORMAT, 2, 2048) == 0);
     IMG_Init(IMG_INIT_PNG);
@@ -128,8 +135,8 @@ void EngineInit() {
 }
 
 void EngineQuit() {
-    gltTerminate();
     IMG_Quit();
+    TTF_Quit();
     SDL_Quit();
 }
 

@@ -10,7 +10,7 @@ struct Animation {
         Rect quad;
 };
 
-#define TAG_ERROR_VAL 65535
+#define TAG_ERROR_VAL 6535
 
 Animation_Tag GetTag(Asset_Ase_Animated *asset, char *str);
 void Animation_Set(Animation *anim, Asset_Ase_Animated *asset, char *name); // pass name = "entire" to loop over all frames

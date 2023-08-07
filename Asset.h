@@ -145,7 +145,7 @@ Asset_Ase_Animated *LoadAsset_Ase_Animated(char *file_path) {
 
 
 void DestroyAsset_Texture(Asset_Texture image) {
-    // free(image.file_path);
+    free(image.file_path);
     glDeleteTextures(1, & image.gl_texture);
 }
 

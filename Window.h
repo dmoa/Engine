@@ -40,12 +40,7 @@ struct Window {
 void Window::Init() {
     ///// OPENGL /////
 
-    window = SDL_CreateWindow("juice",
-                              SDL_WINDOWPOS_UNDEFINED,
-                              SDL_WINDOWPOS_UNDEFINED,
-                              g_graphics.w,
-                              g_graphics.h,
-                              SDL_WINDOW_SHOWN | SDL_WINDOW_RESIZABLE | SDL_WINDOW_OPENGL | SDL_WINDOW_MAXIMIZED);
+    window = SDL_CreateWindow("juice", SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, g_graphics.w, g_graphics.h, SDL_WINDOW_SHOWN | SDL_WINDOW_RESIZABLE | SDL_WINDOW_OPENGL | SDL_WINDOW_MAXIMIZED);
 
     gl_context = SDL_GL_CreateContext(window);
     if (gl_context == NULL) {
@@ -78,28 +73,9 @@ void Window::Init() {
 
     // Now that we've created the window and all the opengl stuff we need,
     // we actually need to put the two together (window + opengl components).
-    gl_program_default = glCreateProgram();
-    g_graphics.gl_program_posteffects_gameplay = glCreateProgram();
+    gl_program_default = CreateGLProgram("default.vert", "default.frag");
 
-    GLuint vert = LoadShader("Include/Engine/Shaders/default.vert", GL_VERTEX_SHADER);
-    GLuint frag = LoadShader("Include/Engine/Shaders/default.frag", GL_FRAGMENT_SHADER);
-    glAttachShader(gl_program_default, vert);
-    glAttachShader(gl_program_default, frag);
-
-    LinkProgram(gl_program_default);
-    // Doesn't actually delete them, but flags them to be deleted later.
-    glDeleteShader(vert);
-    glDeleteShader(frag);
-
-    // GLuint frag_2 = LoadShader("Include/Engine/Shaders/default_2.frag", GL_FRAGMENT_SHADER);
-    GLuint frag_2 = LoadShader("Include/Engine/Shaders/default_2.frag", GL_FRAGMENT_SHADER);
-    GLuint vert_2 = LoadShader("Include/Engine/Shaders/default.vert", GL_VERTEX_SHADER);
-    glAttachShader(g_graphics.gl_program_posteffects_gameplay, vert_2);
-    glAttachShader(g_graphics.gl_program_posteffects_gameplay, frag_2);
-
-    LinkProgram(g_graphics.gl_program_posteffects_gameplay);
-    glDeleteShader(frag_2);
-    glDeleteShader(vert_2);
+    g_graphics.gl_program_posteffects_gameplay = CreateGLProgram("default.vert", "default_2.frag");
 
     // Going to finally activate the default shaders that we wanted to use at the
     // beginning
@@ -110,8 +86,7 @@ void Window::Init() {
 
     // icon
     icon = SDL_LoadBMP("assets/icon.bmp");
-    if (!icon)
-        print("assets/icon.bmp not loaded");
+    if (!icon) print("assets/icon.bmp not loaded");
     SDL_SetWindowIcon(window, icon);
 
     SDL_GetWindowSize(window, &g_graphics.w, &g_graphics.h);
@@ -129,7 +104,7 @@ void Window::Init() {
 
 
 void Window::Clear() {
-    glClearColor(0.0, 0.3, 0.5, 1.0); // navy blue
+    glClearColor(0.0, 0.3, 0.5, 0.0); // navy blue, now seethrough
     glBindFramebuffer(GL_FRAMEBUFFER, gameplay_target.framebuffer);
     glClear(GL_COLOR_BUFFER_BIT);
 
@@ -149,8 +124,14 @@ void Window::Clear() {
 
 
 void Window::Resized(int new_w, int new_h) {
+
     g_graphics.w = new_w;
     g_graphics.h = new_h;
+
+    if (gameplay_target.texture.w * g_graphics.scale > g_graphics.w || gameplay_target.texture.h * g_graphics.scale > g_graphics.h) {
+        g_graphics.scale = 2.0;
+    }
+
     g_graphics.gameplay_target_x = (g_graphics.w - gameplay_target.texture.w * g_graphics.scale) / 2;
     g_graphics.gameplay_target_y = (g_graphics.h - gameplay_target.texture.h * g_graphics.scale) / 2;
     ResizeTextureFramebuffer(& overlay_target, new_w / g_graphics.scale, new_h / g_graphics.scale);

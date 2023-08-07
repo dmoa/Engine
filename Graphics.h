@@ -28,10 +28,10 @@ struct GlobalGraphicsData {
     int num_lights = 0;
     Light lights[MAX_NUM_LIGHTS];
     // where gameplay is drawn from
-    int gameplay_target_x;
-    int gameplay_target_y;
+    int gameplay_target_x; // no scaling
+    int gameplay_target_y; // no scaling
     int gameplay_target_w; // before scaling
-    int gameplay_target_h;
+    int gameplay_target_h; // before scaling
 
     // Graphics has to have memory of what the previous gl program was
     // so that BeginDrawTextureShrink and EndDrawTextureShrink works.
@@ -52,8 +52,11 @@ struct Texture_Framebuffer {
         GLuint framebuffer;
 };
 
+
+GLint CreateGLProgram(std::string vert_name, std::string frag_name);
+
 GLuint CreateEmptyTexture(int width, int height);
-Texture CreateTexture(int width, int height, void *pixels, GLenum format = GL_RGBA);
+Texture CreateTexture(int width, int height, void *pixels, GLenum format = GL_RGBA, bool free_pixels = true);
 void FreeTexture(Texture texture);
 void DrawTexture(Texture texture, int x = 0, int y = 0, int scale = 1);
 void DrawTextureStretched(Texture texture, int x, int y, int w, int h);
@@ -63,6 +66,7 @@ void EndDrawTextureShrunk();
 
 // Without _, clang build complains that the two DrawTextureEx functions are ambiguous,
 // i.e. doesn't know which function call I want. It is what it is.
+// Note, hack to draw vertically flipped, PI angle rotation + flip horizontally.
 void DrawTextureEx_(Texture texture,
                    int x,
                    int y,
@@ -78,22 +82,14 @@ void DrawTextureEx_(Texture texture,
 
 // If source NULL, entire texture is used.
 // If pivot_point NULL, it rotates about the center of the texture.
-void DrawTextureEx(Texture texture,
-                   int x,
-                   int y,
-                   Rect *source,
-                   int scale = 1,
-                   bool flip_horizontally = false,
-                   v2 *pivot_point = NULL,
-                   float angle = 0);
+void DrawTextureEx(Texture texture, int x, int y, Rect *source, int scale = 1, bool flip_horizontally = false, v2 *pivot_point = NULL, float angle = 0);
 
 Texture_Framebuffer CreateTextureFramebuffer(int w, int h);
 void ResizeTextureFramebuffer(Texture_Framebuffer *texture_framebuffer, int w, int h);
 void FreeTextureFramebuffer(Texture_Framebuffer *);
-void SetCurrentFramebuffer(Texture_Framebuffer *texture_framebuffer); // for drawing, otherwise just
-                                                                      // use glBindFramebuffer
+void SetCurrentFramebuffer(Texture_Framebuffer *texture_framebuffer); // for drawing, otherwise just use glBindFramebuffer
 
-GLuint LoadShader(char *path, GLenum shader_type);
+GLuint LoadShader(std::string path, GLenum shader_type);
 void LinkProgram(GLuint gl_program);
 
 void PrintGLError();
@@ -110,6 +106,8 @@ IntRect CropAnimationQuad(IntRect animation_quad, IntRect crop_quad);
 // parameters should be non-normalised.
 void AlignShaderCenter(float offset_x, float offset_y, float true_width, float true_height);
 
+Texture CreateText(TTF_Font *font, SDL_Color color, std::string text);
+
 
 
 #ifdef ENGINE_IMPLEMENTATION
@@ -119,6 +117,7 @@ void AlignShaderCenter(float offset_x, float offset_y, float true_width, float t
 #include "ExtraMath.h"
 #include "Window.h"
 
+
 float gl_window_x(float x) {
     return x / g_graphics.framebuffer_w * 2 - 1;
 }
@@ -127,6 +126,22 @@ float gl_window_x(float x) {
 // For some reason we need to cast the integer variables but not 2 or 1. *shrug*
 float gl_window_y(float y) {
     return 1 - (2 * (float)y / (float)g_graphics.framebuffer_h);
+}
+
+
+GLint CreateGLProgram(std::string vert_name, std::string frag_name) {
+
+    GLuint program = glCreateProgram();
+    GLuint vert = LoadShader("Include/Engine/Shaders/" + vert_name, GL_VERTEX_SHADER);
+    GLuint frag = LoadShader("Include/Engine/Shaders/" + frag_name, GL_FRAGMENT_SHADER);
+    glAttachShader(program, vert);
+    glAttachShader(program, frag);
+    LinkProgram(program);
+    // Doesn't actually delete them, but flags them to be deleted later.
+    glDeleteShader(vert);
+    glDeleteShader(frag);
+
+    return program;
 }
 
 
@@ -161,7 +176,7 @@ GLuint CreateEmptyTexture(int width, int height) {
 
 
 // Default input format is RGBA
-Texture CreateTexture(int width, int height, void *pixels, GLenum format) {
+Texture CreateTexture(int width, int height, void *pixels, GLenum format, bool free_pixels) {
     Texture texture;
     texture.w = width;
     texture.h = height;
@@ -182,7 +197,7 @@ Texture CreateTexture(int width, int height, void *pixels, GLenum format) {
 
     glTexImage2D(GL_TEXTURE_2D, 0, format, width, height, 0, format, GL_UNSIGNED_BYTE, pixels);
 
-    free(pixels);
+    if (free_pixels) free(pixels);
 
     return texture;
 };
@@ -300,6 +315,16 @@ void DrawTextureEx_(Texture texture, int x, int y, int source_x, int source_y, i
         RotatePoint(&top_right, pivot_x, pivot_y, angle);
         RotatePoint(&bottom_right, pivot_x, pivot_y, angle);
         RotatePoint(&bottom_left, pivot_x, pivot_y, angle);
+
+        if (flip_horizontally) {
+            v2 temp = top_left;
+            top_left = top_right;
+            top_right = temp;
+
+            temp = bottom_left;
+            bottom_left = bottom_right;
+            bottom_right = temp;
+        }
 
         glTexCoord2f(tex_left, tex_top);
         glVertex2f(gl_window_x(top_left.x),
@@ -441,7 +466,7 @@ void SetCurrentFramebuffer(GLint default_buffer) {
 }
 
 
-GLuint LoadShader(char *path, GLenum shader_type) {
+GLuint LoadShader(std::string path, GLenum shader_type) {
     char *file = LoadFile(path);
 
     GLuint shader = glCreateShader(shader_type);
@@ -461,7 +486,7 @@ GLuint LoadShader(char *path, GLenum shader_type) {
             glGetShaderInfoLog(shader, length, NULL, log);
             print("%s\n\n", log);
         }
-        print("Error compiling shader %s.", path);
+        print("Error compiling shader %s.", path.c_str());
     }
 
     return shader;
@@ -592,6 +617,20 @@ void AlignShaderCenter(float offset_x, float offset_y, float true_width, float t
     glUniform2f(variable_location_2, true_width, true_height);
     print("%f %f %i %i", offset_x, offset_y, variable_location, variable_location_2);
 }
+
+
+Texture CreateText(TTF_Font *font, SDL_Color color, std::string text) {
+
+    SDL_Surface *surface = TTF_RenderUTF8_Blended(font, text.c_str(), color);
+// SDL_Surface *converted_surface = SDL_ConvertSurfaceFormat(surface, SDL_PIXELFORMAT_RGBA8888, 0);
+    Texture texture = CreateTexture(surface->w, surface->h, surface->pixels, GL_RGBA, false);
+    // SDL_FreeSurface(converted_surface);
+    SDL_FreeSurface(surface);
+
+    return texture;
+
+}
+
 
 
 

@@ -1,5 +1,5 @@
-#include <SDL2/SDL.h>
-#include <SDL2/SDL_mixer.h>
+#include <Engine/Engine.h>
+
 
 Mix_Chunk* Sound_LoadWav(std::string path);
 void Sound_Play(Mix_Chunk* sound);
