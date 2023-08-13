@@ -16,6 +16,8 @@
 // Maximum value for the axis
 #define AXIS_MAX 32767
 
+struct Map;
+
 struct GlobalControls {
         const Uint8 *keys_down = NULL;
         SDL_GameController *controller = NULL;
@@ -46,9 +48,10 @@ extern GlobalControls g_controls;
 
 // Mouse
 
-void GetMouseGameState(int *x, int *y);
-v2i GetMouseGameState();
-v2i GetMouseGameOverlayState();
+void GetMouseInGameWindowCoords(int *x, int *y);
+v2i GetMouseInGameWindowCoords();
+v2i GetMouseGameOverlayCoords();
+bool CursorInGameWindow();
 
 inline bool GetMouseDown(int i = 1) {
     return SDL_GetMouseState(NULL, NULL) == SDL_BUTTON(i);
@@ -149,9 +152,11 @@ bool GlobalControls::ActionDev() {
     return result;
 }
 
+
 GlobalControls g_controls;
 
-v2i GetMouseGameState() {
+
+v2i GetMouseInGameWindowCoords() {
     v2i return_coord = {-1, -1};
     SDL_GetMouseState(& return_coord.x, & return_coord.y);
     return_coord.x = (return_coord.x - g_graphics.gameplay_target_x) / g_graphics.scale;
@@ -160,7 +165,8 @@ v2i GetMouseGameState() {
     return return_coord;
 }
 
-v2i GetMouseGameOverlayState() {
+
+v2i GetMouseGameOverlayCoords() {
     v2i return_coord = {-1, -1};
     SDL_GetMouseState(& return_coord.x, & return_coord.y);
     return_coord.x = return_coord.x / g_graphics.scale;
@@ -168,5 +174,14 @@ v2i GetMouseGameOverlayState() {
 
     return return_coord;
 }
+
+
+bool CursorInGameWindow() {
+    v2i coords;
+    SDL_GetMouseState(& coords.x, & coords.y);
+    return PointRect(coords.x, coords.y, g_graphics.gameplay_target_x, g_graphics.gameplay_target_y, g_graphics.gameplay_target_w * g_graphics.scale, g_graphics.gameplay_target_h * g_graphics.scale);
+}
+
+
 
 #endif

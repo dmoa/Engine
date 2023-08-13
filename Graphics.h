@@ -10,9 +10,22 @@
 
 #define MAX_NUM_LIGHTS 64
 
+struct v2f {
+    float x;
+    float y;
+};
+
+
+struct v3f {
+    float x;
+    float y;
+    float z;
+};
+
+
 struct Light {
-    v2 position; // normalised
-    v3 color;    // 0->1
+    v2f position; // normalised
+    v3f color;    // 0->1
     float power;
 };
 
@@ -60,7 +73,7 @@ Texture CreateTexture(int width, int height, void *pixels, GLenum format = GL_RG
 void FreeTexture(Texture texture);
 void DrawTexture(Texture texture, int x = 0, int y = 0, int scale = 1);
 void DrawTextureStretched(Texture texture, int x, int y, int w, int h);
-void BeginDrawTextureShrunk(float shrink_ticker);
+void BeginDrawTextureShrunk(double shrink_ticker);
 void EndDrawTextureShrunk();
 // pivot is relative
 
@@ -78,11 +91,11 @@ void DrawTextureEx_(Texture texture,
                    bool flip_horizontally = false,
                    int pivot_x = -1,
                    int pivot_y = -1,
-                   float angle = 0);
+                   double angle = 0);
 
 // If source NULL, entire texture is used.
 // If pivot_point NULL, it rotates about the center of the texture.
-void DrawTextureEx(Texture texture, int x, int y, Rect *source, int scale = 1, bool flip_horizontally = false, v2 *pivot_point = NULL, float angle = 0);
+void DrawTextureEx(Texture texture, int x, int y, Rect *source, int scale = 1, bool flip_horizontally = false, v2 *pivot_point = NULL, double angle = 0);
 
 Texture_Framebuffer CreateTextureFramebuffer(int w, int h);
 void ResizeTextureFramebuffer(Texture_Framebuffer *texture_framebuffer, int w, int h);
@@ -94,8 +107,8 @@ void LinkProgram(GLuint gl_program);
 
 void PrintGLError();
 
-void SetDrawColor(float r, float g, float b, float a = 1.0);
-void SetDrawOpacity(float opacity); // sets opacity for current gl program
+void SetDrawColor(double r, double g, double b, double a = 1.0);
+void SetDrawOpacity(double opacity); // sets opacity for current gl program
 int AddLight(Light light); // returns index of new light
 void SendLightsToProgram(GLint current_gl_program);
 
@@ -104,7 +117,7 @@ void SendLightsToProgram(GLint current_gl_program);
 IntRect CropAnimationQuad(IntRect animation_quad, IntRect crop_quad);
 
 // parameters should be non-normalised.
-void AlignShaderCenter(float offset_x, float offset_y, float true_width, float true_height);
+void AlignShaderCenter(double offset_x, double offset_y, double true_width, double true_height);
 
 Texture CreateText(TTF_Font *font, SDL_Color color, std::string text);
 
@@ -118,14 +131,14 @@ Texture CreateText(TTF_Font *font, SDL_Color color, std::string text);
 #include "Window.h"
 
 
-float gl_window_x(float x) {
+double gl_window_x(double x) {
     return x / g_graphics.framebuffer_w * 2 - 1;
 }
 
 
 // For some reason we need to cast the integer variables but not 2 or 1. *shrug*
-float gl_window_y(float y) {
-    return 1 - (2 * (float)y / (float)g_graphics.framebuffer_h);
+double gl_window_y(double y) {
+    return 1 - (2 * (double)y / (double)g_graphics.framebuffer_h);
 }
 
 
@@ -212,10 +225,10 @@ void DrawTexture(Texture texture, int x, int y, int scale) {
     glBindTexture(GL_TEXTURE_2D, texture.gl_texture);
     glBegin(GL_QUADS);
 
-    float left = gl_window_x(x);
-    float right = gl_window_x(x + texture.w * scale); // (-) instead of (+) because opengl coordinate system
-    float top = gl_window_y(y);
-    float bottom = gl_window_y(y + texture.h * scale);
+    double left = gl_window_x(x);
+    double right = gl_window_x(x + texture.w * scale); // (-) instead of (+) because opengl coordinate system
+    double top = gl_window_y(y);
+    double bottom = gl_window_y(y + texture.h * scale);
 
     glTexCoord2f(0.0, 1.0);
     glVertex2f(left, top); // Top Left Corner
@@ -234,10 +247,10 @@ void DrawTextureStretched(Texture texture, int x, int y, int w, int h) {
     glBindTexture(GL_TEXTURE_2D, texture.gl_texture);
     glBegin(GL_QUADS);
 
-    float left = gl_window_x(x);
-    float right = gl_window_x(x + w); // (-) instead of (+) because opengl coordinate system
-    float top = gl_window_y(y);
-    float bottom = gl_window_y(y + h);
+    double left = gl_window_x(x);
+    double right = gl_window_x(x + w); // (-) instead of (+) because opengl coordinate system
+    double top = gl_window_y(y);
+    double bottom = gl_window_y(y + h);
 
     glTexCoord2f(0.0, 1.0);
     glVertex2f(left, top); // Top Left Corner
@@ -252,7 +265,7 @@ void DrawTextureStretched(Texture texture, int x, int y, int w, int h) {
 }
 
 
-void BeginDrawTextureShrunk(float shrink_ticker) {
+void BeginDrawTextureShrunk(double shrink_ticker) {
     glGetIntegerv(GL_CURRENT_PROGRAM, & g_graphics.previous_gl_program);
 
     glUseProgram(g_graphics.gl_program_posteffects_gameplay);
@@ -267,28 +280,28 @@ void EndDrawTextureShrunk() {
 }
 
 
-void DrawTextureEx_(Texture texture, int x, int y, int source_x, int source_y, int source_w, int source_h, int scale, bool flip_horizontally, int pivot_x, int pivot_y, float angle) {
+void DrawTextureEx_(Texture texture, int x, int y, int source_x, int source_y, int source_w, int source_h, int scale, bool flip_horizontally, int pivot_x, int pivot_y, double angle) {
     glBindTexture(GL_TEXTURE_2D, texture.gl_texture);
     glBegin(GL_QUADS);
 
     // Texture Coords
 
-    float tex_left = (float)source_x / (float)texture.w;
-    float tex_top = (1.0) - (float)source_y / (float)texture.h; // not top because textures coords
+    double tex_left = (double)source_x / (double)texture.w;
+    double tex_top = (1.0) - (double)source_y / (double)texture.h; // not top because textures coords
                                                                 // are where (0,0) is bottom left
-    float tex_nw = (float)source_w / (float)texture.w;
-    float tex_nh = (float)source_h / (float)texture.h;
+    double tex_nw = (double)source_w / (double)texture.w;
+    double tex_nh = (double)source_h / (double)texture.h;
 
     if (angle == 0) {
         // Draw Coords
-        float left = gl_window_x(x);
-        float right = gl_window_x(x + source_w * scale);
-        float top = gl_window_y(y);
-        float bottom = gl_window_y(y + source_h * scale);
+        double left = gl_window_x(x);
+        double right = gl_window_x(x + source_w * scale);
+        double top = gl_window_y(y);
+        double bottom = gl_window_y(y + source_h * scale);
 
         // If flipping, swap left and right x coords around.
         if (flip_horizontally) {
-            float temp = left;
+            double temp = left;
             left = right;
             right = temp;
         }
@@ -351,7 +364,7 @@ void DrawTextureEx(Texture texture,
                    int scale,
                    bool flip_horizontally,
                    v2 *pivot_point,
-                   float angle) {
+                   double angle) {
 
     int source_x, source_y, source_w, source_h;
     if (source != NULL) {
@@ -546,7 +559,7 @@ void PrintGLError() {
 }
 
 
-void SetDrawColor(float r, float g, float b, float a) {
+void SetDrawColor(double r, double g, double b, double a) {
     int current_gl_program; glGetIntegerv(GL_CURRENT_PROGRAM, & current_gl_program);
     int variable_location = glGetUniformLocation(current_gl_program, "color_filter");
     glUniform4f(variable_location, r, g, b, a);
@@ -554,10 +567,13 @@ void SetDrawColor(float r, float g, float b, float a) {
 }
 
 
-void SetDrawOpacity(float opacity) {
-    int current_gl_program; glGetIntegerv(GL_CURRENT_PROGRAM, & current_gl_program);
+void SetDrawOpacity(double opacity) {
+    int current_gl_program;
+    glGetIntegerv(GL_CURRENT_PROGRAM, &current_gl_program);
     int variable_location = glGetUniformLocation(current_gl_program, "color_filter");
-    glUniform4f(variable_location, 1.0, 1.0, 1.0, opacity);
+    float current_values[4];
+    glGetUniformfv(current_gl_program, variable_location, current_values);
+    glUniform4f(variable_location, current_values[0], current_values[1], current_values[2], opacity);
 }
 
 
@@ -609,7 +625,7 @@ IntRect CropAnimationQuad(IntRect animation_quad, IntRect crop_quad) {
 }
 
 
-void AlignShaderCenter(float offset_x, float offset_y, float true_width, float true_height) {
+void AlignShaderCenter(double offset_x, double offset_y, double true_width, double true_height) {
     int current_gl_program; glGetIntegerv(GL_CURRENT_PROGRAM, & current_gl_program);
     int variable_location = glGetUniformLocation(current_gl_program, "texture_offset");
     glUniform2f(variable_location, offset_x, offset_y);

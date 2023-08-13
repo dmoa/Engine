@@ -1,13 +1,13 @@
 #version 130
 
 uniform sampler2D pixel_texture;
-uniform float time_elapsed;
+uniform double time_elapsed;
 
 in vec2 texture_position;
 
 out vec4 out_color;
 
-vec2 RadialDistortion(vec2 coord, float dist) {
+vec2 RadialDistortion(vec2 coord, double dist) {
     vec2 cc = coord - 0.5;
     dist = dot(cc, cc) * dist + cos(time_elapsed * .3) * .01;
     return (coord + cc * (1.0 + dist) * dist);

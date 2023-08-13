@@ -20,7 +20,7 @@ typedef uint16_t u16;
 typedef uint8_t u8;
 
 struct v2 {
-        float x, y;
+        double x, y;
 };
 
 struct v2i {
@@ -32,19 +32,19 @@ struct v2i {
 
 
 struct v3 {
-        float x, y, z;
+        double x, y, z;
 };
 
 struct v4 {
-        float x, y, z, w;
+        double x, y, z, w;
 };
 
 struct IntRect {
         int x, y, w, h;
 };
 
-struct FloatRect {
-        float x, y, w, h;
+struct DoubleRect {
+        double x, y, w, h;
 };
 
 // Generally avoid using.
@@ -109,7 +109,6 @@ struct FloatRect {
 #include "Clock.h"
 #include "Animation.h"
 #include "ExtraMath.h"
-#include "utils/gltext.h"
 #include "Sound.h"
 
 void EngineInit();

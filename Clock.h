@@ -2,17 +2,18 @@
 
 // The more previous fps we store, the more accurate the average fps.
 #define ACCURACY 50
+#define SEC_PER_TICK 1.0/60.0
 
-extern float g_dt;
-extern float g_time_elapsed;
+extern double g_dt;
+extern double g_time_elapsed;
 
 struct EngineClock {
         void tick();
 
-        float last_tick_time = 0;
+        double last_tick_time = 0;
 
         // for average fps
-        float fpss[ACCURACY];
+        double fpss[ACCURACY];
         int fpss_index = -1;
         int average_fps = -1;
         char average_fps_str[5];
@@ -24,7 +25,7 @@ struct EngineClock {
 void EngineClock::tick() {
     // DT
 
-    float tick_time = SDL_GetTicks();
+    double tick_time = SDL_GetTicks();
     g_dt = (tick_time - last_tick_time) / 1000;
     last_tick_time = tick_time;
 
@@ -34,7 +35,7 @@ void EngineClock::tick() {
 
     // Average FPS
 
-    float sum = 0;
+    double sum = 0;
     for (int i = 0; i < ACCURACY; i++) {
         sum += fpss[i];
     }
@@ -52,7 +53,7 @@ void EngineClock::tick() {
         itoa(average_fps, average_fps_str, 10);
 }
 
-float g_dt = 0.f;
-float g_time_elapsed = 0.f;
+double g_dt = 0.f;
+double g_time_elapsed = 0.f;
 
 #endif

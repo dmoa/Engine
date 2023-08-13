@@ -2,7 +2,6 @@
 
 #include "Graphics.h"
 #include "Clock.h"
-#include "utils/gltext.h"
 
 struct Window {
     void Init();
@@ -29,7 +28,7 @@ struct Window {
     SDL_Texture *other_texture;
     Rect other_texture_rect;
     SDL_Surface *icon;
-    float ticker = 0.0;
+    double ticker = 0.0;
 };
 
 #ifdef ENGINE_IMPLEMENTATION
@@ -60,7 +59,6 @@ void Window::Init() {
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
     glGetIntegerv(GL_FRAMEBUFFER_BINDING, &default_framebuffer);
-    print("default buff %i", default_framebuffer);
 
     // @TODO hacked together, make this less shit.
     g_graphics.gameplay_target_w = 512;
@@ -85,19 +83,15 @@ void Window::Init() {
     ///// NOT OPENGL /////
 
     // icon
-    icon = SDL_LoadBMP("assets/icon.bmp");
-    if (!icon) print("assets/icon.bmp not loaded");
-    SDL_SetWindowIcon(window, icon);
+    // icon = SDL_LoadBMP("assets/icon.bmp");
+    // if (!icon) print("assets/icon.bmp not loaded");
+    // SDL_SetWindowIcon(window, icon);
 
     SDL_GetWindowSize(window, &g_graphics.w, &g_graphics.h);
 
     Resized(g_graphics.w, g_graphics.h); // hack to set correct dimensions of gameplay_target
     // might not need the line below, @ CHECK
     g_graphics.framebuffer_w = g_graphics.framebuffer_h = 512;
-
-    // text
-    gltInit();
-
 
     SDL_ShowCursor(SDL_DISABLE);
 }
