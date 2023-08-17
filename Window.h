@@ -39,7 +39,15 @@ struct Window {
 void Window::Init() {
     ///// OPENGL /////
 
-    window = SDL_CreateWindow("juice", SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, g_graphics.w, g_graphics.h, SDL_WINDOW_SHOWN | SDL_WINDOW_RESIZABLE | SDL_WINDOW_OPENGL | SDL_WINDOW_MAXIMIZED);
+    window = SDL_CreateWindow("Island Citadel", SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, g_graphics.w, g_graphics.h, SDL_WINDOW_SHOWN | SDL_WINDOW_RESIZABLE | SDL_WINDOW_OPENGL | SDL_WINDOW_MAXIMIZED);
+
+    SDL_Surface* icon_surface = SDL_LoadBMP("Assets/icon.bmp");
+    if (! icon_surface) {
+        print("Failed to load icon.");
+    }
+    SDL_SetWindowIcon(window, icon_surface);
+    SDL_FreeSurface(icon_surface);
+
 
     gl_context = SDL_GL_CreateContext(window);
     if (gl_context == NULL) {
