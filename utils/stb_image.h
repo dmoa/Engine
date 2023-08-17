@@ -289,12 +289,12 @@ at the end of the credits.
 // appropriately).
 //
 // Additionally, there is a new, parallel interface for loading files as
-// (linear) doubles to preserve the full dynamic range:
+// (linear) floats to preserve the full dynamic range:
 //
-//    double *data = stbi_loadf(filename, &x, &y, &n, 0);
+//    float *data = stbi_loadf(filename, &x, &y, &n, 0);
 //
 // If you load LDR images through this interface, those images will
-// be promoted to doubleing point values, run through the inverse of
+// be promoted to floating point values, run through the inverse of
 // constants corresponding to the above:
 //
 //     stbi_ldr_to_hdr_scale(1.0f);
@@ -496,16 +496,16 @@ STBIDEF stbi_us *stbi_load_from_file_16(FILE *f,
 
 ////////////////////////////////////
 //
-// double-per-channel interface
+// float-per-channel interface
 //
 #ifndef STBI_NO_LINEAR
-STBIDEF double *stbi_loadf_from_memory(stbi_uc const *buffer,
+STBIDEF float *stbi_loadf_from_memory(stbi_uc const *buffer,
                                       int len,
                                       int *x,
                                       int *y,
                                       int *channels_in_file,
                                       int desired_channels);
-STBIDEF double *stbi_loadf_from_callbacks(stbi_io_callbacks const *clbk,
+STBIDEF float *stbi_loadf_from_callbacks(stbi_io_callbacks const *clbk,
                                          void *user,
                                          int *x,
                                          int *y,
@@ -513,12 +513,12 @@ STBIDEF double *stbi_loadf_from_callbacks(stbi_io_callbacks const *clbk,
                                          int desired_channels);
 
 #ifndef STBI_NO_STDIO
-STBIDEF double *stbi_loadf(char const *filename,
+STBIDEF float *stbi_loadf(char const *filename,
                           int *x,
                           int *y,
                           int *channels_in_file,
                           int desired_channels);
-STBIDEF double *stbi_loadf_from_file(FILE *f,
+STBIDEF float *stbi_loadf_from_file(FILE *f,
                                     int *x,
                                     int *y,
                                     int *channels_in_file,
@@ -527,13 +527,13 @@ STBIDEF double *stbi_loadf_from_file(FILE *f,
 #endif
 
 #ifndef STBI_NO_HDR
-STBIDEF void stbi_hdr_to_ldr_gamma(double gamma);
-STBIDEF void stbi_hdr_to_ldr_scale(double scale);
+STBIDEF void stbi_hdr_to_ldr_gamma(float gamma);
+STBIDEF void stbi_hdr_to_ldr_scale(float scale);
 #endif // STBI_NO_HDR
 
 #ifndef STBI_NO_LINEAR
-STBIDEF void stbi_ldr_to_hdr_gamma(double gamma);
-STBIDEF void stbi_ldr_to_hdr_scale(double scale);
+STBIDEF void stbi_ldr_to_hdr_gamma(float gamma);
+STBIDEF void stbi_ldr_to_hdr_scale(float scale);
 #endif // STBI_NO_LINEAR
 
 // stbi_is_hdr is always defined, but always returns false if STBI_NO_HDR
@@ -1026,7 +1026,7 @@ static int stbi__psd_is16(stbi__context *s);
 
 #ifndef STBI_NO_HDR
 static int stbi__hdr_test(stbi__context *s);
-static double *stbi__hdr_load(stbi__context *s,
+static float *stbi__hdr_load(stbi__context *s,
                              int *x,
                              int *y,
                              int *comp,
@@ -1178,7 +1178,7 @@ static void *stbi__malloc_mad4(int a, int b, int c, int d, int add) {
 #endif
 
 // stbi__err - error
-// stbi__errpf - error returning pointer to double
+// stbi__errpf - error returning pointer to float
 // stbi__errpuc - error returning pointer to unsigned char
 
 #ifdef STBI_NO_FAILURE_STRINGS
@@ -1189,7 +1189,7 @@ static void *stbi__malloc_mad4(int a, int b, int c, int d, int add) {
 #define stbi__err(x, y) stbi__err(x)
 #endif
 
-#define stbi__errpf(x, y) ((double *)(size_t)(stbi__err(x, y) ? NULL : NULL))
+#define stbi__errpf(x, y) ((float *)(size_t)(stbi__err(x, y) ? NULL : NULL))
 #define stbi__errpuc(x, y) ((unsigned char *)(size_t)(stbi__err(x, y) ? NULL : NULL))
 
 STBIDEF void stbi_image_free(void *retval_from_stbi_load) {
@@ -1197,11 +1197,11 @@ STBIDEF void stbi_image_free(void *retval_from_stbi_load) {
 }
 
 #ifndef STBI_NO_LINEAR
-static double *stbi__ldr_to_hdr(stbi_uc *data, int x, int y, int comp);
+static float *stbi__ldr_to_hdr(stbi_uc *data, int x, int y, int comp);
 #endif
 
 #ifndef STBI_NO_HDR
-static stbi_uc *stbi__hdr_to_ldr(double *data, int x, int y, int comp);
+static stbi_uc *stbi__hdr_to_ldr(float *data, int x, int y, int comp);
 #endif
 
 static int stbi__vertically_flip_on_load_global = 0;
@@ -1277,7 +1277,7 @@ static void *stbi__load_main(stbi__context *s,
 
 #ifndef STBI_NO_HDR
     if (stbi__hdr_test(s)) {
-        double *hdr = stbi__hdr_load(s, x, y, comp, req_comp, ri);
+        float *hdr = stbi__hdr_load(s, x, y, comp, req_comp, ri);
         return stbi__hdr_to_ldr(hdr, *x, *y, req_comp ? req_comp : *comp);
     }
 #endif
@@ -1419,10 +1419,10 @@ static stbi__uint16 *stbi__load_and_postprocess_16bit(stbi__context *s,
 }
 
 #if !defined(STBI_NO_HDR) && !defined(STBI_NO_LINEAR)
-static void stbi__double_postprocess(double *result, int *x, int *y, int *comp, int req_comp) {
+static void stbi__float_postprocess(float *result, int *x, int *y, int *comp, int req_comp) {
     if (stbi__vertically_flip_on_load && result != NULL) {
         int channels = req_comp ? req_comp : *comp;
-        stbi__vertical_flip(result, *x, *y, channels * sizeof(double));
+        stbi__vertical_flip(result, *x, *y, channels * sizeof(float));
     }
 }
 #endif
@@ -1595,14 +1595,14 @@ STBIDEF stbi_uc *stbi_load_gif_from_memory(stbi_uc const *buffer,
 #endif
 
 #ifndef STBI_NO_LINEAR
-static double *stbi__loadf_main(stbi__context *s, int *x, int *y, int *comp, int req_comp) {
+static float *stbi__loadf_main(stbi__context *s, int *x, int *y, int *comp, int req_comp) {
     unsigned char *data;
 #ifndef STBI_NO_HDR
     if (stbi__hdr_test(s)) {
         stbi__result_info ri;
-        double *hdr_data = stbi__hdr_load(s, x, y, comp, req_comp, &ri);
+        float *hdr_data = stbi__hdr_load(s, x, y, comp, req_comp, &ri);
         if (hdr_data)
-            stbi__double_postprocess(hdr_data, x, y, comp, req_comp);
+            stbi__float_postprocess(hdr_data, x, y, comp, req_comp);
         return hdr_data;
     }
 #endif
@@ -1612,7 +1612,7 @@ static double *stbi__loadf_main(stbi__context *s, int *x, int *y, int *comp, int
     return stbi__errpf("unknown image type", "Image not of any known type, or corrupt");
 }
 
-STBIDEF double *stbi_loadf_from_memory(stbi_uc const *buffer,
+STBIDEF float *stbi_loadf_from_memory(stbi_uc const *buffer,
                                       int len,
                                       int *x,
                                       int *y,
@@ -1623,7 +1623,7 @@ STBIDEF double *stbi_loadf_from_memory(stbi_uc const *buffer,
     return stbi__loadf_main(&s, x, y, comp, req_comp);
 }
 
-STBIDEF double *stbi_loadf_from_callbacks(stbi_io_callbacks const *clbk,
+STBIDEF float *stbi_loadf_from_callbacks(stbi_io_callbacks const *clbk,
                                          void *user,
                                          int *x,
                                          int *y,
@@ -1635,8 +1635,8 @@ STBIDEF double *stbi_loadf_from_callbacks(stbi_io_callbacks const *clbk,
 }
 
 #ifndef STBI_NO_STDIO
-STBIDEF double *stbi_loadf(char const *filename, int *x, int *y, int *comp, int req_comp) {
-    double *result;
+STBIDEF float *stbi_loadf(char const *filename, int *x, int *y, int *comp, int req_comp) {
+    float *result;
     FILE *f = stbi__fopen(filename, "rb");
     if (!f)
         return stbi__errpf("can't fopen", "Unable to open file");
@@ -1645,7 +1645,7 @@ STBIDEF double *stbi_loadf(char const *filename, int *x, int *y, int *comp, int 
     return result;
 }
 
-STBIDEF double *stbi_loadf_from_file(FILE *f, int *x, int *y, int *comp, int req_comp) {
+STBIDEF float *stbi_loadf_from_file(FILE *f, int *x, int *y, int *comp, int req_comp) {
     stbi__context s;
     stbi__start_file(&s, f);
     return stbi__loadf_main(&s, x, y, comp, req_comp);
@@ -1710,22 +1710,22 @@ STBIDEF int stbi_is_hdr_from_callbacks(stbi_io_callbacks const *clbk, void *user
 }
 
 #ifndef STBI_NO_LINEAR
-static double stbi__l2h_gamma = 2.2f, stbi__l2h_scale = 1.0f;
+static float stbi__l2h_gamma = 2.2f, stbi__l2h_scale = 1.0f;
 
-STBIDEF void stbi_ldr_to_hdr_gamma(double gamma) {
+STBIDEF void stbi_ldr_to_hdr_gamma(float gamma) {
     stbi__l2h_gamma = gamma;
 }
-STBIDEF void stbi_ldr_to_hdr_scale(double scale) {
+STBIDEF void stbi_ldr_to_hdr_scale(float scale) {
     stbi__l2h_scale = scale;
 }
 #endif
 
-static double stbi__h2l_gamma_i = 1.0f / 2.2f, stbi__h2l_scale_i = 1.0f;
+static float stbi__h2l_gamma_i = 1.0f / 2.2f, stbi__h2l_scale_i = 1.0f;
 
-STBIDEF void stbi_hdr_to_ldr_gamma(double gamma) {
+STBIDEF void stbi_hdr_to_ldr_gamma(float gamma) {
     stbi__h2l_gamma_i = 1 / gamma;
 }
-STBIDEF void stbi_hdr_to_ldr_scale(double scale) {
+STBIDEF void stbi_hdr_to_ldr_scale(float scale) {
     stbi__h2l_scale_i = 1 / scale;
 }
 
@@ -2087,12 +2087,12 @@ static stbi__uint16 *stbi__convert_format16(stbi__uint16 *data,
 #endif
 
 #ifndef STBI_NO_LINEAR
-static double *stbi__ldr_to_hdr(stbi_uc *data, int x, int y, int comp) {
+static float *stbi__ldr_to_hdr(stbi_uc *data, int x, int y, int comp) {
     int i, k, n;
-    double *output;
+    float *output;
     if (!data)
         return NULL;
-    output = (double *)stbi__malloc_mad4(x, y, comp, sizeof(double), 0);
+    output = (float *)stbi__malloc_mad4(x, y, comp, sizeof(float), 0);
     if (output == NULL) {
         STBI_FREE(data);
         return stbi__errpf("outofmem", "Out of memory");
@@ -2105,7 +2105,7 @@ static double *stbi__ldr_to_hdr(stbi_uc *data, int x, int y, int comp) {
     for (i = 0; i < x * y; ++i) {
         for (k = 0; k < n; ++k) {
             output[i * comp + k] =
-                (double)(pow(data[i * comp + k] / 255.0f, stbi__l2h_gamma) * stbi__l2h_scale);
+                (float)(pow(data[i * comp + k] / 255.0f, stbi__l2h_gamma) * stbi__l2h_scale);
         }
     }
     if (n < comp) {
@@ -2119,8 +2119,8 @@ static double *stbi__ldr_to_hdr(stbi_uc *data, int x, int y, int comp) {
 #endif
 
 #ifndef STBI_NO_HDR
-#define stbi__double2int(x) ((int)(x))
-static stbi_uc *stbi__hdr_to_ldr(double *data, int x, int y, int comp) {
+#define stbi__float2int(x) ((int)(x))
+static stbi_uc *stbi__hdr_to_ldr(float *data, int x, int y, int comp) {
     int i, k, n;
     stbi_uc *output;
     if (!data)
@@ -2137,21 +2137,21 @@ static stbi_uc *stbi__hdr_to_ldr(double *data, int x, int y, int comp) {
         n = comp - 1;
     for (i = 0; i < x * y; ++i) {
         for (k = 0; k < n; ++k) {
-            double z =
-                (double)pow(data[i * comp + k] * stbi__h2l_scale_i, stbi__h2l_gamma_i) * 255 + 0.5f;
+            float z =
+                (float)pow(data[i * comp + k] * stbi__h2l_scale_i, stbi__h2l_gamma_i) * 255 + 0.5f;
             if (z < 0)
                 z = 0;
             if (z > 255)
                 z = 255;
-            output[i * comp + k] = (stbi_uc)stbi__double2int(z);
+            output[i * comp + k] = (stbi_uc)stbi__float2int(z);
         }
         if (k < comp) {
-            double z = data[i * comp + k] * 255 + 0.5f;
+            float z = data[i * comp + k] * 255 + 0.5f;
             if (z < 0)
                 z = 0;
             if (z > 255)
                 z = 255;
-            output[i * comp + k] = (stbi_uc)stbi__double2int(z);
+            output[i * comp + k] = (stbi_uc)stbi__float2int(z);
         }
     }
     STBI_FREE(data);
@@ -4124,7 +4124,7 @@ static stbi_uc *stbi__resample_row_generic(stbi_uc *out,
 
 // this is a reduced-precision calculation of YCbCr-to-RGB introduced
 // to make sure the code produces the same results in both SIMD and scalar
-#define stbi__double2fixed(x) (((int)((x)*4096.0f + 0.5f)) << 8)
+#define stbi__float2fixed(x) (((int)((x)*4096.0f + 0.5f)) << 8)
 static void stbi__YCbCr_to_RGB_row(stbi_uc *out,
                                    const stbi_uc *y,
                                    const stbi_uc *pcb,
@@ -4137,10 +4137,10 @@ static void stbi__YCbCr_to_RGB_row(stbi_uc *out,
         int r, g, b;
         int cr = pcr[i] - 128;
         int cb = pcb[i] - 128;
-        r = y_fixed + cr * stbi__double2fixed(1.40200f);
-        g = y_fixed + (cr * -stbi__double2fixed(0.71414f)) +
-            ((cb * -stbi__double2fixed(0.34414f)) & 0xffff0000);
-        b = y_fixed + cb * stbi__double2fixed(1.77200f);
+        r = y_fixed + cr * stbi__float2fixed(1.40200f);
+        g = y_fixed + (cr * -stbi__float2fixed(0.71414f)) +
+            ((cb * -stbi__float2fixed(0.34414f)) & 0xffff0000);
+        b = y_fixed + cb * stbi__float2fixed(1.77200f);
         r >>= 20;
         g >>= 20;
         b >>= 20;
@@ -4291,10 +4291,10 @@ static void stbi__YCbCr_to_RGB_simd(stbi_uc *out,
         int r, g, b;
         int cr = pcr[i] - 128;
         int cb = pcb[i] - 128;
-        r = y_fixed + cr * stbi__double2fixed(1.40200f);
-        g = y_fixed + cr * -stbi__double2fixed(0.71414f) +
-            ((cb * -stbi__double2fixed(0.34414f)) & 0xffff0000);
-        b = y_fixed + cb * stbi__double2fixed(1.77200f);
+        r = y_fixed + cr * stbi__float2fixed(1.40200f);
+        g = y_fixed + cr * -stbi__float2fixed(0.71414f) +
+            ((cb * -stbi__float2fixed(0.34414f)) & 0xffff0000);
+        b = y_fixed + cb * stbi__float2fixed(1.77200f);
         r >>= 20;
         g >>= 20;
         b >>= 20;
@@ -7096,9 +7096,9 @@ static void *stbi__psd_load(stbi__context *s,
             for (i = 0; i < w * h; ++i) {
                 stbi__uint16 *pixel = (stbi__uint16 *)out + 4 * i;
                 if (pixel[3] != 0 && pixel[3] != 65535) {
-                    double a = pixel[3] / 65535.0f;
-                    double ra = 1.0f / a;
-                    double inv_a = 65535.0f * (1 - ra);
+                    float a = pixel[3] / 65535.0f;
+                    float ra = 1.0f / a;
+                    float inv_a = 65535.0f * (1 - ra);
                     pixel[0] = (stbi__uint16)(pixel[0] * ra + inv_a);
                     pixel[1] = (stbi__uint16)(pixel[1] * ra + inv_a);
                     pixel[2] = (stbi__uint16)(pixel[2] * ra + inv_a);
@@ -7108,9 +7108,9 @@ static void *stbi__psd_load(stbi__context *s,
             for (i = 0; i < w * h; ++i) {
                 unsigned char *pixel = out + 4 * i;
                 if (pixel[3] != 0 && pixel[3] != 255) {
-                    double a = pixel[3] / 255.0f;
-                    double ra = 1.0f / a;
-                    double inv_a = 255.0f * (1 - ra);
+                    float a = pixel[3] / 255.0f;
+                    float ra = 1.0f / a;
+                    float inv_a = 255.0f * (1 - ra);
                     pixel[0] = (unsigned char)(pixel[0] * ra + inv_a);
                     pixel[1] = (unsigned char)(pixel[1] * ra + inv_a);
                     pixel[2] = (unsigned char)(pixel[2] * ra + inv_a);
@@ -7988,11 +7988,11 @@ static char *stbi__hdr_gettoken(stbi__context *z, char *buffer) {
     return buffer;
 }
 
-static void stbi__hdr_convert(double *output, stbi_uc *input, int req_comp) {
+static void stbi__hdr_convert(float *output, stbi_uc *input, int req_comp) {
     if (input[3] != 0) {
-        double f1;
+        float f1;
         // Exponent
-        f1 = (double)ldexp(1.0f, input[3] - (int)(128 + 8));
+        f1 = (float)ldexp(1.0f, input[3] - (int)(128 + 8));
         if (req_comp <= 2)
             output[0] = (input[0] + input[1] + input[2]) * f1 / 3;
         else {
@@ -8020,7 +8020,7 @@ static void stbi__hdr_convert(double *output, stbi_uc *input, int req_comp) {
     }
 }
 
-static double *stbi__hdr_load(stbi__context *s,
+static float *stbi__hdr_load(stbi__context *s,
                              int *x,
                              int *y,
                              int *comp,
@@ -8031,7 +8031,7 @@ static double *stbi__hdr_load(stbi__context *s,
     int valid = 0;
     int width, height;
     stbi_uc *scanline;
-    double *hdr_data;
+    float *hdr_data;
     int len;
     unsigned char count, value;
     int i, j, k, c1, c2, z;
@@ -8082,11 +8082,11 @@ static double *stbi__hdr_load(stbi__context *s,
     if (req_comp == 0)
         req_comp = 3;
 
-    if (!stbi__mad4sizes_valid(width, height, req_comp, sizeof(double), 0))
+    if (!stbi__mad4sizes_valid(width, height, req_comp, sizeof(float), 0))
         return stbi__errpf("too large", "HDR image is too large");
 
     // Read data
-    hdr_data = (double *)stbi__malloc_mad4(width, height, req_comp, sizeof(double), 0);
+    hdr_data = (float *)stbi__malloc_mad4(width, height, req_comp, sizeof(float), 0);
     if (!hdr_data)
         return stbi__errpf("outofmem", "Out of memory");
 
@@ -8778,9 +8778,9 @@ STBIDEF int stbi_is_16_bit_from_callbacks(stbi_io_callbacks const *c, void *user
       1.07    attempt to fix C++ warning/errors again
       1.06    attempt to fix C++ warning/errors again
       1.05    fix TGA loading to return correct *comp and use good luminance
-   calc 1.04    default double alpha is 1, not 255; use 'void *' for
+   calc 1.04    default float alpha is 1, not 255; use 'void *' for
    stbi_image_free 1.03    bugfixes to STBI_NO_STDIO, STBI_NO_HDR 1.02 support
-   for (subset of) HDR files, double interface for preferred access to them 1.01
+   for (subset of) HDR files, float interface for preferred access to them 1.01
    fix bug: possible bug in handling right-side up bmps... not sure fix bug: the
    stbi__bmp_load() and stbi__tga_load() functions didn't work at all 1.00
    interface to zlib that skips zlib header 0.99    correct handling of alpha in

@@ -30,7 +30,7 @@ struct GlobalControls {
         void Init();
 
         // CALL AFTER ALL OTHER UPDATE CALLS
-        void Update();
+        void EndUpdate();
 
         bool Left();
         bool Right();
@@ -88,7 +88,7 @@ void GlobalControls::Init() {
     controller = GetGameController();
 }
 
-void GlobalControls::Update() {
+void GlobalControls::EndUpdate() {
     action_one_before = Action1();
 }
 

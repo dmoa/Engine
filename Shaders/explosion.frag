@@ -1,7 +1,7 @@
 #version 120
 
 uniform sampler2D pixel_texture;
-uniform double u_time;
+uniform float u_time;
 uniform vec2 texture_offset;
 uniform vec2 texture_size;
 

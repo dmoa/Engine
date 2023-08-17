@@ -20,7 +20,7 @@ typedef uint16_t u16;
 typedef uint8_t u8;
 
 struct v2 {
-        double x, y;
+        float x, y;
 };
 
 struct v2i {
@@ -32,19 +32,19 @@ struct v2i {
 
 
 struct v3 {
-        double x, y, z;
+        float x, y, z;
 };
 
 struct v4 {
-        double x, y, z, w;
+        float x, y, z, w;
 };
 
 struct IntRect {
         int x, y, w, h;
 };
 
-struct DoubleRect {
-        double x, y, w, h;
+struct FloatRect {
+        float x, y, w, h;
 };
 
 // Generally avoid using.

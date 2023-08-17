@@ -57,7 +57,7 @@ struct polygon
 {
     std::vector<vec2d> p;	// Transformed Points
     vec2d pos;				// Position of shape
-    double angle;			// Direction of shape
+    float angle;			// Direction of shape
     std::vector<vec2d> o;	// "Model" of shape
     bool overlap = false;	// Flag to indicate if overlap has occurred
 };
@@ -94,23 +94,23 @@ bool ShapeOverlap_SAT(v2* r1, v2* r2)
         {
             int b = (a + 1) % POLYGON_NUM_POINTS;
             vec2d axisProj = { -(poly1[b].y - poly1[a].y), poly1[b].x - poly1[a].x };
-            double d = sqrtf(axisProj.x * axisProj.x + axisProj.y * axisProj.y);
+            float d = sqrtf(axisProj.x * axisProj.x + axisProj.y * axisProj.y);
             axisProj = { axisProj.x / d, axisProj.y / d };
 
             // Work out min and max 1D points for r1
-            double min_r1 = INFINITY, max_r1 = -INFINITY;
+            float min_r1 = INFINITY, max_r1 = -INFINITY;
             for (int p = 0; p < POLYGON_NUM_POINTS; p++)
             {
-                double q = (poly1[p].x * axisProj.x + poly1[p].y * axisProj.y);
+                float q = (poly1[p].x * axisProj.x + poly1[p].y * axisProj.y);
                 min_r1 = std::min(min_r1, q);
                 max_r1 = std::max(max_r1, q);
             }
 
             // Work out min and max 1D points for r2
-            double min_r2 = INFINITY, max_r2 = -INFINITY;
+            float min_r2 = INFINITY, max_r2 = -INFINITY;
             for (int p = 0; p < POLYGON_NUM_POINTS; p++)
             {
-                double q = (poly2[p].x * axisProj.x + poly2[p].y * axisProj.y);
+                float q = (poly2[p].x * axisProj.x + poly2[p].y * axisProj.y);
                 min_r2 = std::min(min_r2, q);
                 max_r2 = std::max(max_r2, q);
             }
@@ -128,7 +128,7 @@ bool ShapeOverlap_SAT_STATIC(polygon &r1, polygon &r2)
     polygon *poly1 = &r1;
     polygon *poly2 = &r2;
 
-    double overlap = INFINITY;
+    float overlap = INFINITY;
 
     for (int shape = 0; shape < 2; shape++)
     {
@@ -144,23 +144,23 @@ bool ShapeOverlap_SAT_STATIC(polygon &r1, polygon &r2)
             vec2d axisProj = { -(poly1->p[b].y - poly1->p[a].y), poly1->p[b].x - poly1->p[a].x };
 
             // Optional normalisation of projection axis enhances stability slightly
-            //double d = sqrtf(axisProj.x * axisProj.x + axisProj.y * axisProj.y);
+            //float d = sqrtf(axisProj.x * axisProj.x + axisProj.y * axisProj.y);
             //axisProj = { axisProj.x / d, axisProj.y / d };
 
             // Work out min and max 1D points for r1
-            double min_r1 = INFINITY, max_r1 = -INFINITY;
+            float min_r1 = INFINITY, max_r1 = -INFINITY;
             for (int p = 0; p < POLYGON_NUM_POINTS; p++)
             {
-                double q = (poly1->p[p].x * axisProj.x + poly1->p[p].y * axisProj.y);
+                float q = (poly1->p[p].x * axisProj.x + poly1->p[p].y * axisProj.y);
                 min_r1 = std::min(min_r1, q);
                 max_r1 = std::max(max_r1, q);
             }
 
             // Work out min and max 1D points for r2
-            double min_r2 = INFINITY, max_r2 = -INFINITY;
+            float min_r2 = INFINITY, max_r2 = -INFINITY;
             for (int p = 0; p < POLYGON_NUM_POINTS; p++)
             {
-                double q = (poly2->p[p].x * axisProj.x + poly2->p[p].y * axisProj.y);
+                float q = (poly2->p[p].x * axisProj.x + poly2->p[p].y * axisProj.y);
                 min_r2 = std::min(min_r2, q);
                 max_r2 = std::max(max_r2, q);
             }
@@ -176,7 +176,7 @@ bool ShapeOverlap_SAT_STATIC(polygon &r1, polygon &r2)
     // If we got here, the objects have collided, we will displace r1
     // by overlap along the vector between the two object centers
     vec2d d = { r2.pos.x - r1.pos.x, r2.pos.y - r1.pos.y };
-    double s = sqrtf(d.x*d.x + d.y*d.y);
+    float s = sqrtf(d.x*d.x + d.y*d.y);
     r1.pos.x -= overlap * d.x / s;
     r1.pos.y -= overlap * d.y / s;
     return false;
@@ -209,9 +209,9 @@ bool ShapeOverlap_DIAGS(polygon &r1, polygon &r2)
                 vec2d line_r2e = poly2->p[(q + 1) % POLYGON_NUM_POINTS];
 
                 // Standard "off the shelf" line segment intersection
-                double h = (line_r2e.x - line_r2s.x) * (line_r1s.y - line_r1e.y) - (line_r1s.x - line_r1e.x) * (line_r2e.y - line_r2s.y);
-                double t1 = ((line_r2s.y - line_r2e.y) * (line_r1s.x - line_r2s.x) + (line_r2e.x - line_r2s.x) * (line_r1s.y - line_r2s.y)) / h;
-                double t2 = ((line_r1s.y - line_r1e.y) * (line_r1s.x - line_r2s.x) + (line_r1e.x - line_r1s.x) * (line_r1s.y - line_r2s.y)) / h;
+                float h = (line_r2e.x - line_r2s.x) * (line_r1s.y - line_r1e.y) - (line_r1s.x - line_r1e.x) * (line_r2e.y - line_r2s.y);
+                float t1 = ((line_r2s.y - line_r2e.y) * (line_r1s.x - line_r2s.x) + (line_r2e.x - line_r2s.x) * (line_r1s.y - line_r2s.y)) / h;
+                float t2 = ((line_r1s.y - line_r1e.y) * (line_r1s.x - line_r2s.x) + (line_r1e.x - line_r1s.x) * (line_r1s.y - line_r2s.y)) / h;
 
                 if (t1 >= 0.0f && t1 < 1.0f && t2 >= 0.0f && t2 < 1.0f)
                 {
@@ -252,9 +252,9 @@ bool ShapeOverlap_DIAGS_STATIC(polygon &r1, polygon &r2)
                 vec2d line_r2e = poly2->p[(q + 1) % POLYGON_NUM_POINTS];
 
                 // Standard "off the shelf" line segment intersection
-                double h = (line_r2e.x - line_r2s.x) * (line_r1s.y - line_r1e.y) - (line_r1s.x - line_r1e.x) * (line_r2e.y - line_r2s.y);
-                double t1 = ((line_r2s.y - line_r2e.y) * (line_r1s.x - line_r2s.x) + (line_r2e.x - line_r2s.x) * (line_r1s.y - line_r2s.y)) / h;
-                double t2 = ((line_r1s.y - line_r1e.y) * (line_r1s.x - line_r2s.x) + (line_r1e.x - line_r1s.x) * (line_r1s.y - line_r2s.y)) / h;
+                float h = (line_r2e.x - line_r2s.x) * (line_r1s.y - line_r1e.y) - (line_r1s.x - line_r1e.x) * (line_r2e.y - line_r2s.y);
+                float t1 = ((line_r2s.y - line_r2e.y) * (line_r1s.x - line_r2s.x) + (line_r2e.x - line_r2s.x) * (line_r1s.y - line_r2s.y)) / h;
+                float t2 = ((line_r1s.y - line_r1e.y) * (line_r1s.x - line_r2s.x) + (line_r1e.x - line_r1s.x) * (line_r1s.y - line_r2s.y)) / h;
 
                 if (t1 >= 0.0f && t1 < 1.0f && t2 >= 0.0f && t2 < 1.0f)
                 {

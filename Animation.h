@@ -6,7 +6,7 @@
 struct Animation {
         std::string name = "NULL";
         int frame_i;
-        double tick;
+        float tick;
         Rect quad;
 };
 
@@ -18,7 +18,7 @@ bool Animation_Exists(Asset_Ase* asset, std::string name);
 void Animation_Set(Animation *anim, Asset_Ase_Animated *asset, std::string name); // pass name = "entire" to loop over all frames
 void Animation_SetIf(Animation *anim, Asset_Ase_Animated *asset, std::string name);
 bool Animation_Update(Animation *anim, Asset_Ase_Animated *asset);
-bool Animation_Update_CustomTick(Animation *anim, Asset_Ase_Animated *asset, double dt);
+bool Animation_Update_CustomTick(Animation *anim, Asset_Ase_Animated *asset, float dt);
 
 
 
@@ -89,7 +89,7 @@ bool Animation_Update(Animation *anim, Asset_Ase_Animated *asset) {
 }
 
 
-bool Animation_Update_CustomTick(Animation *anim, Asset_Ase_Animated *asset, double dt) {
+bool Animation_Update_CustomTick(Animation *anim, Asset_Ase_Animated *asset, float dt) {
     anim->tick -= dt * 1000; // convert dt into milliseconds
     if (anim->tick < 0) {
         Animation_Tag t = GetTag(asset, anim->name);

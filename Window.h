@@ -28,7 +28,7 @@ struct Window {
     SDL_Texture *other_texture;
     Rect other_texture_rect;
     SDL_Surface *icon;
-    double ticker = 0.0;
+    float ticker = 0.0;
 };
 
 #ifdef ENGINE_IMPLEMENTATION
