@@ -99,6 +99,7 @@ struct FloatRect {
 #ifdef ENGINE_IMPLEMENTATION
 #define STB_IMAGE_IMPLEMENTATION
 #define GLT_IMPLEMENTATION
+#define MINIAUDIO_IMPLEMENTATION
 #define ASE_LOADER_IMPLEMENTATION
 #endif
 
@@ -109,6 +110,7 @@ struct FloatRect {
 #include "Clock.h"
 #include "Animation.h"
 #include "ExtraMath.h"
+#include "utils/miniaudio.h"
 #include "Sound.h"
 
 void EngineInit();
@@ -124,10 +126,10 @@ void EngineInit() {
     SDL_Init(SDL_INIT_EVERYTHING);
     assert(TTF_Init() == 0);
     assert(SDL_Init(SDL_INIT_AUDIO) == 0);
-    assert(Mix_OpenAudio(44100, MIX_DEFAULT_FORMAT, 2, 2048) == 0);
     IMG_Init(IMG_INIT_PNG);
     srand(time(0));
     g_controls.Init();
+    assert(ma_engine_init(NULL, & sound_engine) == MA_SUCCESS);
 
     Ase_SetFlipVerticallyOnLoad(true);
     stbi_set_flip_vertically_on_load(true);
@@ -136,6 +138,7 @@ void EngineInit() {
 void EngineQuit() {
     IMG_Quit();
     TTF_Quit();
+    ma_engine_uninit(& sound_engine);
     SDL_Quit();
 }
 

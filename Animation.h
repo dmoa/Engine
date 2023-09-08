@@ -13,6 +13,7 @@ struct Animation {
 #define TAG_NOT_FOUND 6535
 
 Animation_Tag GetTag(Asset_Ase_Animated *asset, std::string str);
+Animation_Tag GetTag(Asset_Ase *asset, std::string str);
 bool Animation_Exists(Asset_Ase_Animated* asset, std::string name);
 bool Animation_Exists(Asset_Ase* asset, std::string name);
 void Animation_Set(Animation *anim, Asset_Ase_Animated *asset, std::string name); // pass name = "entire" to loop over all frames
@@ -28,13 +29,18 @@ bool Animation_Update_CustomTick(Animation *anim, Asset_Ase_Animated *asset, flo
 
 Animation_Tag GetTag(Asset_Ase_Animated *asset, std::string str) {
 
-    if (str =="entire") return {"entire", 0, asset->num_frames - 1};
+    if (str == "entire") return {"entire", 0, asset->num_frames - 1};
 
     for (u16 i = 0; i < asset->tags.num_tags; i++) {
         if (asset->tags.tags[i].name == str)
             return asset->tags.tags[i];
     }
     return {"", TAG_NOT_FOUND, TAG_NOT_FOUND};
+}
+
+
+Animation_Tag GetTag(Asset_Ase *asset, std::string str) {
+    return GetTag((Asset_Ase_Animated*) asset, str);
 }
 
 
