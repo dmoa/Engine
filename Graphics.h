@@ -97,7 +97,7 @@ void DrawTextureEx_(Texture texture,
 
 // If source NULL, entire texture is used.
 // If pivot_point NULL, it rotates about the center of the texture.
-void DrawTextureEx(Texture texture, int x, int y, Rect *source, int scale = 1, bool flip_horizontally = false, v2 *pivot_point = NULL, float angle = 0);
+void DrawTextureEx(Texture texture, int x, int y, Rect *source, int scale = 1, bool flip_horizontally = false, v2 *pivot_point = NULL, float angle = 0, int draw_w = -1, int draw_h = -1);
 
 Texture_Framebuffer CreateTextureFramebuffer(int w, int h);
 void ResizeTextureFramebuffer(Texture_Framebuffer *texture_framebuffer, int w, int h);
@@ -361,14 +361,13 @@ void DrawTextureEx_(Texture texture, int x, int y, int source_x, int source_y, i
 }
 
 
-void DrawTextureEx(Texture texture,
-                   int x,
+void DrawTextureEx(Texture texture, int x,
                    int y,
                    Rect *source,
                    int scale,
                    bool flip_horizontally,
                    v2 *pivot_point,
-                   float angle) {
+                   float angle, int draw_w, int draw_h) {
 
     int source_x, source_y, source_w, source_h;
     if (source != NULL) {
@@ -404,7 +403,9 @@ void DrawTextureEx(Texture texture,
                   flip_horizontally,
                   px,
                   py,
-                  angle);
+                  angle,
+                  draw_w,
+                  draw_h);
 }
 
 

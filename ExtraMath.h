@@ -42,7 +42,9 @@ bool LineLine(float x1, float y1, float x2, float y2, float x3, float y3, float 
 
 bool LineRect(float x1, float y1, float x2, float y2, float rx, float ry, float rw, float rh);
 
-bool PointRect(float x, float y, Rect *rect);
+bool PointRect(float x, float y, IntRect *rect);
+
+bool PointRect(float x, float y, FloatRect *rect);
 
 bool PointRect(float x, float y, Rect rect);
 
@@ -68,6 +70,8 @@ float AngleBetweenTwoPoints(int target_x, int target_y, int origin_x, int origin
 
 
 float GetAngleDiff(float a, float b);
+
+float Lerp(float a, float b, float t);
 
 
 
@@ -152,7 +156,11 @@ bool LineRect(float x1, float y1, float x2, float y2, float rx, float ry, float 
     return left || right || top || bottom;
 }
 
-bool PointRect(float x, float y, Rect *rect) {
+bool PointRect(float x, float y, IntRect *rect) {
+    return x > rect->x && x < rect->x + rect->w && y > rect->y && y < rect->y + rect->h;
+}
+
+bool PointRect(float x, float y, FloatRect *rect) {
     return x > rect->x && x < rect->x + rect->w && y > rect->y && y < rect->y + rect->h;
 }
 
@@ -283,6 +291,18 @@ float GetAngleDiff(float a, float b) {
     }
 
     return diff;
+}
+
+
+float Lerp(float a, float b, float t) {
+
+    if (t < 0.5f) {
+        t = 2 * t * t;
+    } else {
+        t = -1 + (4 - 2 * t) * t;
+    }
+
+    return (1 - t) * a + t * b;
 }
 
 
