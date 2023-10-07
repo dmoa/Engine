@@ -57,6 +57,12 @@ void Window::Init() {
     g_graphics.high_dpi_scale = g_graphics.w / window_width;
 
 
+    // for larger windows, scale the game a bit more.
+    if (g_graphics.w > 2000 && g_graphics.h > 1100) {
+        g_graphics.scale = 3;
+    }
+
+
     gl_context = SDL_GL_CreateContext(window);
     if (gl_context == NULL) {
         print("OpenGL Context Error: %s", SDL_GetError());
@@ -140,10 +146,6 @@ void Window::Resized(int new_w, int new_h) {
 
     g_graphics.w = new_w;
     g_graphics.h = new_h;
-
-    if (gameplay_target.texture.w * g_graphics.scale > g_graphics.w || gameplay_target.texture.h * g_graphics.scale > g_graphics.h) {
-        g_graphics.scale = 2.0;
-    }
 
     g_graphics.gameplay_target_x = (g_graphics.w - gameplay_target.texture.w * g_graphics.scale) / 2;
     g_graphics.gameplay_target_y = (g_graphics.h - gameplay_target.texture.h * g_graphics.scale) / 2;
