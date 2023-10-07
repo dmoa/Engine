@@ -130,6 +130,10 @@ bool GlobalControls::Back() {
     return keys_down[SDL_SCANCODE_ESCAPE] || ControllerButton(SDL_CONTROLLER_BUTTON_START);
 }
 
+
+// we don't need to use g_graphics.high_dpi_scale here because we don't care about the
+// actual values, we only care if they change, so this is still correct if we don't use
+// the variable because a number change is a change whether or not the number is "accurate".
 bool GlobalControls::MouseMoved() {
     int new_x, new_y;
     GetMouseState(&new_x, &new_y);
@@ -159,6 +163,9 @@ GlobalControls g_controls;
 v2i GetMouseInGameWindowCoords() {
     v2i return_coord = {-1, -1};
     SDL_GetMouseState(& return_coord.x, & return_coord.y);
+    return_coord.x *= g_graphics.high_dpi_scale;
+    return_coord.y *= g_graphics.high_dpi_scale;
+
     return_coord.x = (return_coord.x - g_graphics.gameplay_target_x) / g_graphics.scale;
     return_coord.y = (return_coord.y - g_graphics.gameplay_target_y) / g_graphics.scale;
 
@@ -169,6 +176,10 @@ v2i GetMouseInGameWindowCoords() {
 v2i GetMouseGameOverlayCoords() {
     v2i return_coord = {-1, -1};
     SDL_GetMouseState(& return_coord.x, & return_coord.y);
+    return_coord.x *= g_graphics.high_dpi_scale;
+    return_coord.y *= g_graphics.high_dpi_scale;
+
+
     return_coord.x = return_coord.x / g_graphics.scale;
     return_coord.y = return_coord.y / g_graphics.scale;
 
@@ -179,6 +190,9 @@ v2i GetMouseGameOverlayCoords() {
 bool CursorInGameWindow() {
     v2i coords;
     SDL_GetMouseState(& coords.x, & coords.y);
+    coords.x *= g_graphics.high_dpi_scale;
+    coords.y *= g_graphics.high_dpi_scale;
+
     return PointRect(coords.x, coords.y, g_graphics.gameplay_target_x, g_graphics.gameplay_target_y, g_graphics.gameplay_target_w * g_graphics.scale, g_graphics.gameplay_target_h * g_graphics.scale);
 }
 

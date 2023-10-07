@@ -146,7 +146,7 @@ struct Palette_Chunk {
 };
 
 // Delete and replace with SDL_Rect if using SDL
-// struct Rect {
+// struct IntRect {
 //     u32 x;
 //     u32 y;
 //     u32 w;
@@ -155,7 +155,7 @@ struct Palette_Chunk {
 
 struct Slice {
         char *name;
-        Rect quad;
+        IntRect quad;
 };
 
 struct Ase_Output {
@@ -269,7 +269,7 @@ Ase_Output *Ase_Load(std::string path) {
                 frames[current_frame_index].frame_duration;
 
             if (frames[current_frame_index].magic_number != FRAME_MN) {
-                printf("%s: Frame %i magic number not correct, corrupt file?\n",
+                printf("%s: Frame %i magic number not corIntRect, corrupt file?\n",
                        path.c_str(),
                        current_frame_index);
                 Ase_Destroy_Output(output);
@@ -420,7 +420,7 @@ Ase_Output *Ase_Load(std::string path) {
                         // the starting frame_number.
                         // int frame_number = GetU32(buffer_p + 20 + slen);
 
-                        Rect quad = { (s32)GetU32(buffer_p + slen + 24),
+                        IntRect quad = { (s32)GetU32(buffer_p + slen + 24),
                                       (s32)GetU32(buffer_p + slen + 28),
                                       GetU32(buffer_p + slen + 32),
                                       GetU32(buffer_p + slen + 36) };

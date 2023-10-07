@@ -27,9 +27,9 @@ struct Asset_Ase {
         // empty pointers.
 
         // For the draw order and for where an asset / entity can be damaged
-        Rect *movement_box;
+        IntRect *movement_box;
         // Used by the asset / entity to damage other assets / entities.
-        Rect *collision_box;
+        IntRect *collision_box;
 };
 
 struct Asset_Ase_Animated : Asset_Ase {
@@ -109,11 +109,11 @@ Asset_Ase *LoadAsset_Ase(char* file_path, bool* is_animated) {
 
     for (int i = 0; i < output->num_slices; i++) {
         if (strequal(output->slices[i].name, "movement_box")) {
-            asset->movement_box = bmalloc(Rect);
+            asset->movement_box = bmalloc(IntRect);
             *(asset->movement_box) = output->slices[i].quad;
         }
         else if (strequal(output->slices[i].name, "collision_box")) {
-            asset->collision_box = bmalloc(Rect);
+            asset->collision_box = bmalloc(IntRect);
             *(asset->collision_box) = output->slices[i].quad;
         }
         else {

@@ -7,7 +7,7 @@ struct Animation {
         std::string name = "NULL";
         int frame_i;
         float tick;
-        Rect quad;
+        IntRect quad;
 };
 
 #define TAG_NOT_FOUND 6535

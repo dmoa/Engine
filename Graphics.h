@@ -30,9 +30,15 @@ struct Light {
 };
 
 struct GlobalGraphicsData {
-    int w; // window width
-    int h; // window height
+    int w; // number of pixels wide
+    int h; // number of pixels high
+
+    // this game has pixel art, this is how much we should scale it
     int scale;
+
+    // macbooks have retina displays, where window dimensions != pixel dimensions.
+    // This variable lets us do maths for cursor positions and other things.
+    int high_dpi_scale;
 
     // Current framebuffer dimensions
     int framebuffer_w;
@@ -97,7 +103,7 @@ void DrawTextureEx_(Texture texture,
 
 // If source NULL, entire texture is used.
 // If pivot_point NULL, it rotates about the center of the texture.
-void DrawTextureEx(Texture texture, int x, int y, Rect *source, int scale = 1, bool flip_horizontally = false, v2 *pivot_point = NULL, float angle = 0, int draw_w = -1, int draw_h = -1);
+void DrawTextureEx(Texture texture, int x, int y, IntRect *source, int scale = 1, bool flip_horizontally = false, v2 *pivot_point = NULL, float angle = 0, int draw_w = -1, int draw_h = -1);
 
 Texture_Framebuffer CreateTextureFramebuffer(int w, int h);
 void ResizeTextureFramebuffer(Texture_Framebuffer *texture_framebuffer, int w, int h);
@@ -363,7 +369,7 @@ void DrawTextureEx_(Texture texture, int x, int y, int source_x, int source_y, i
 
 void DrawTextureEx(Texture texture, int x,
                    int y,
-                   Rect *source,
+                   IntRect *source,
                    int scale,
                    bool flip_horizontally,
                    v2 *pivot_point,
@@ -654,7 +660,7 @@ Texture CreateText(TTF_Font *font, SDL_Color color, std::string text) {
 
 
 
-
+// default scale factor 2
 GlobalGraphicsData g_graphics = { 1400, 800, 2};
 
 #endif

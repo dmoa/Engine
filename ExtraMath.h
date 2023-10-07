@@ -32,7 +32,7 @@ bool AABB(Asset_Ase *a, Asset_Ase *b, float x, float y, float x2, float y2);
 
 bool AABB_Movement(float x, float y, float w, float h, Asset_Ase *a, float x2, float y2);
 
-bool AABB_Movement(Rect rect, Asset_Ase *a, float x2, float y2);
+bool AABB_Movement(IntRect rect, Asset_Ase *a, float x2, float y2);
 
 bool AABB_Collision(float x, float y, float w, float h, Asset_Ase *a, float x2, float y2);
 
@@ -46,7 +46,7 @@ bool PointRect(float x, float y, IntRect *rect);
 
 bool PointRect(float x, float y, FloatRect *rect);
 
-bool PointRect(float x, float y, Rect rect);
+bool PointRect(float x, float y, IntRect rect);
 
 bool PointRect(float x, float y, float x2, float y2, float w, float h);
 
@@ -126,7 +126,7 @@ bool AABB_Movement(float x, float y, float w, float h, Asset_Ase *a, float x2, f
            y + h > y2 + a->movement_box->y && y < y2 + a->movement_box->y + a->movement_box->h;
 }
 
-bool AABB_Movement(Rect rect, Asset_Ase *a, float x2, float y2) {
+bool AABB_Movement(IntRect rect, Asset_Ase *a, float x2, float y2) {
     return AABB_Movement(rect.x, rect.y, rect.w, rect.h, a, x2, y2);
 }
 
@@ -164,7 +164,7 @@ bool PointRect(float x, float y, FloatRect *rect) {
     return x > rect->x && x < rect->x + rect->w && y > rect->y && y < rect->y + rect->h;
 }
 
-bool PointRect(float x, float y, Rect rect) {
+bool PointRect(float x, float y, IntRect rect) {
     return x > rect.x && x < rect.x + rect.w && y > rect.y && y < rect.y + rect.h;
 }
 

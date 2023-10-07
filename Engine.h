@@ -47,8 +47,6 @@ struct FloatRect {
         float x, y, w, h;
 };
 
-// Generally avoid using.
-#define Rect IntRect
 
 // bmalloc with auto casting
 // We don't use new because new usually implies a constructor.

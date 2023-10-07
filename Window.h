@@ -26,7 +26,7 @@ struct Window {
 
     // @TODO Fix this crap
     SDL_Texture *other_texture;
-    Rect other_texture_rect;
+    IntRect other_texture_rect;
     SDL_Surface *icon;
     float ticker = 0.0;
 };
@@ -39,7 +39,7 @@ struct Window {
 void Window::Init() {
     ///// OPENGL /////
 
-    window = SDL_CreateWindow("Island Citadel", SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, g_graphics.w, g_graphics.h, SDL_WINDOW_SHOWN | SDL_WINDOW_RESIZABLE | SDL_WINDOW_OPENGL | SDL_WINDOW_MAXIMIZED);
+    window = SDL_CreateWindow("Island Citadel", SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, g_graphics.w, g_graphics.h, SDL_WINDOW_SHOWN | SDL_WINDOW_RESIZABLE | SDL_WINDOW_OPENGL | SDL_WINDOW_MAXIMIZED | SDL_WINDOW_ALLOW_HIGHDPI);
 
     SDL_Surface* icon_surface = SDL_LoadBMP("Assets/icon.bmp");
     if (! icon_surface) {
@@ -49,10 +49,19 @@ void Window::Init() {
     SDL_FreeSurface(icon_surface);
 
 
+    // Because high dpi messes with the dimensions, we have to setup some of these now:
+    int window_width; int window_height;
+    SDL_GetWindowSize(window, & window_width, & window_height);
+    SDL_GL_GetDrawableSize(window, & g_graphics.w, & g_graphics.h);
+    if (g_graphics.w / window_width != g_graphics.h / window_height) print("dpi scale error!");
+    g_graphics.high_dpi_scale = g_graphics.w / window_width;
+
+
     gl_context = SDL_GL_CreateContext(window);
     if (gl_context == NULL) {
         print("OpenGL Context Error: %s", SDL_GetError());
     }
+
 
     if (glew_init() != GLEW_OK) {
         print("Glew failed to initialise!");
@@ -95,9 +104,11 @@ void Window::Init() {
     // if (!icon) print("assets/icon.bmp not loaded");
     // SDL_SetWindowIcon(window, icon);
 
-    SDL_GetWindowSize(window, &g_graphics.w, &g_graphics.h);
+    // SDL_GetWindowSize(window, &g_graphics.w, &g_graphics.h);
+    int width, height;
+    SDL_GL_GetDrawableSize(window, &width, &height);
+    Resized(width, height); // hack to set correct dimensions of gameplay_target
 
-    Resized(g_graphics.w, g_graphics.h); // hack to set correct dimensions of gameplay_target
     // might not need the line below, @ CHECK
     g_graphics.framebuffer_w = g_graphics.framebuffer_h = 512;
 
