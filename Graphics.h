@@ -297,6 +297,9 @@ void DrawTextureEx_(Texture texture, int x, int y, int source_x, int source_y, i
         draw_h = source_h;
     }
 
+    draw_w *= scale;
+    draw_h *= scale;
+
     // Texture Coords
 
     float tex_left = (float)source_x / (float) texture.w;
@@ -308,9 +311,9 @@ void DrawTextureEx_(Texture texture, int x, int y, int source_x, int source_y, i
     if (angle == 0) {
         // Draw Coords
         float left = gl_window_x(x);
-        float right = gl_window_x(x + draw_w * scale);
+        float right = gl_window_x(x + draw_w);
         float top = gl_window_y(y);
-        float bottom = gl_window_y(y + draw_h * scale);
+        float bottom = gl_window_y(y + draw_h);
 
         // If flipping, swap left and right x coords around.
         if (flip_horizontally) {
@@ -329,7 +332,9 @@ void DrawTextureEx_(Texture texture, int x, int y, int source_x, int source_y, i
         glVertex2f(left, bottom); // Bottom Left Corner
 
     } else {
-        // pivot is relative so we have to "make it *not* relative"
+        pivot_x *= scale;
+        pivot_y *= scale;
+        // pivot passed in is relative so we have to "make it *not* relative"
         pivot_x += x;
         pivot_y += y;
 
@@ -399,8 +404,8 @@ void DrawTextureEx(Texture texture, int x,
         py = pivot_point->y;
     }
     else {
-    // defaults to center of texture
-    // (take stretching into account, hence draw_w not source_w)
+        // defaults to center of texture
+        // (take stretching into account, hence draw_w not source_w)
         px = draw_w / 2;
         py = draw_h / 2;
     }
@@ -655,10 +660,10 @@ void AlignShaderCenter(float offset_x, float offset_y, float true_width, float t
 
 Texture CreateText(TTF_Font *font, SDL_Color color, std::string text) {
 
-    SDL_Surface *surface = TTF_RenderUTF8_Blended(font, text.c_str(), color);
-// SDL_Surface *converted_surface = SDL_ConvertSurfaceFormat(surface, SDL_PIXELFORMAT_RGBA8888, 0);
-    Texture texture = CreateTexture(surface->w, surface->h, surface->pixels, GL_RGBA, false);
-    // SDL_FreeSurface(converted_surface);
+    SDL_Surface *surface = TTF_RenderUTF8_Solid(font, text.c_str(), color);
+    SDL_Surface* converted_surface = SDL_ConvertSurfaceFormat(surface, SDL_PIXELFORMAT_RGBA32, 0);
+    Texture texture = CreateTexture(converted_surface->w, converted_surface->h, converted_surface->pixels, GL_RGBA, false);
+    SDL_FreeSurface(converted_surface);
     SDL_FreeSurface(surface);
 
     return texture;

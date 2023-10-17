@@ -123,7 +123,6 @@ void EngineQuit();
 void EngineInit() {
     SDL_Init(SDL_INIT_EVERYTHING);
     assert(TTF_Init() == 0);
-    assert(SDL_Init(SDL_INIT_AUDIO) == 0);
     IMG_Init(IMG_INIT_PNG);
     srand(time(0));
     g_controls.Init();
