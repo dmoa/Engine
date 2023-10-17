@@ -86,6 +86,7 @@ void Window::Init() {
     // @TODO hacked together, make this less shit.
     g_graphics.gameplay_target_w = 512;
     g_graphics.gameplay_target_h = 512;
+
     gameplay_target = CreateTextureFramebuffer(g_graphics.gameplay_target_w, g_graphics.gameplay_target_h, default_framebuffer);
     // Overlay target is the size of the screen (* scale), but we resize it if
     // window is resized.

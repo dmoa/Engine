@@ -47,8 +47,8 @@ struct GlobalGraphicsData {
     int num_lights = 0;
     Light lights[MAX_NUM_LIGHTS];
     // where gameplay is drawn from
-    int gameplay_target_x; // no scaling
-    int gameplay_target_y; // no scaling
+    int gameplay_target_x; // w/ scaling
+    int gameplay_target_y; // w/ scaling
     int gameplay_target_w; // before scaling
     int gameplay_target_h; // before scaling
 
@@ -334,9 +334,9 @@ void DrawTextureEx_(Texture texture, int x, int y, int source_x, int source_y, i
         pivot_y += y;
 
         v2 top_left = { x, y };
-        v2 top_right = { x + source_w, y };
-        v2 bottom_right = { x + source_w, y + source_h };
-        v2 bottom_left = { x, y + source_h };
+        v2 top_right = { x + draw_w, y };
+        v2 bottom_right = { x + draw_w, y + draw_h };
+        v2 bottom_left = { x, y + draw_h };
 
         RotatePoint(&top_left, pivot_x, pivot_y, angle);
         RotatePoint(&top_right, pivot_x, pivot_y, angle);
@@ -388,14 +388,21 @@ void DrawTextureEx(Texture texture, int x,
         source_h = texture.h;
     }
 
+    if (draw_w == -1 && draw_h == -1) {
+        draw_w = source_w;
+        draw_h = source_h;
+    }
+
     int px, py = -1;
     if (pivot_point != NULL) {
         px = pivot_point->x;
         py = pivot_point->y;
     }
-    else { // defaults to center of texture
-        px = source_w / 2;
-        py = source_h / 2;
+    else {
+    // defaults to center of texture
+    // (take stretching into account, hence draw_w not source_w)
+        px = draw_w / 2;
+        py = draw_h / 2;
     }
 
     DrawTextureEx_(texture,
